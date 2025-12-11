@@ -1,4 +1,4 @@
-import React from "react";
+
 import { FaWhatsapp, FaInstagram, FaFacebookF } from "react-icons/fa";
 
 const SocialFloatingBar = () => {
