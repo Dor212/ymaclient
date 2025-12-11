@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap");
+
+* {
+  font-family: "Heebo", sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: transparent;
+  margin: 0;
+}
+
+.hebrew-content {
+  direction: rtl;
+}
+
+[dir="rtl"] body {
+  text-align: start;
+}
+
+[dir="rtl"] .container,
+[dir="rtl"] .centered,
+[dir="rtl"] .mx-auto {
+  margin-inline: auto;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.yma-animated-border {
+  position: relative;
+  border-radius: 30px;
+  padding: 3px;
+  overflow: hidden;
+}
+
+.yma-animated-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--yma-border-start),
+    var(--yma-border-end),
+    var(--yma-border-start)
+  );
+  background-size: 200% 200%;
+  animation: ymaBorderFlow 12s linear infinite;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.yma-animated-border-inner {
+  position: relative;
+  border-radius: 28px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(24px);
+}
+
+.yma-ring-flow {
+  animation: ymaRingFlow 8s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes yma-badge-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes yma-orbit-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.yma-orbit-spin {
+  animation: yma-orbit-rotate 32s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes ymaRingFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes ymaBorderFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes ymaBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
