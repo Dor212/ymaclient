@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
+import { api } from "../../api/axios";
 
 type CarouselItem = { src?: string; alt?: string; node?: ReactNode };
 
@@ -14,6 +15,17 @@ type PortfolioBlock = {
 };
 
 type PortfolioSectionProps = { id?: string; blocks?: PortfolioBlock[]; className?: string };
+
+type ProjectItem = {
+    _id: string;
+    clientName: string;
+    projectType: string;
+    description: string;
+    images: string[];
+    order: number;
+    isActive: boolean;
+    createdAt?: string;
+};
 
 const fadeUp: Variants = {
     hidden: { opacity: 0, y: 24 },
@@ -27,45 +39,6 @@ const fadeUp: Variants = {
         },
     }),
 };
-
-const DEFAULT_BLOCKS: PortfolioBlock[] = [
-    {
-        clientName: "סטודיו Bar.F",
-        projectType: "אתר תדמית בקוד מלא",
-        description:
-            "סטודיו לעיצוב שצריך אתר שמרגיש כמו חוויה גרפית. עבדנו על שילוב בין ויז׳ואלים חזקים לניווט פשוט וברור. האתר בנוי לקידום תהליך יצירת קשר מהיר מבלי להעמיס על המשתמש.",
-        items: [
-            { src: "/ExampleWeb/BarF/BarF.png" },
-            { src: "/ExampleWeb/BarF/BFI1.png" },
-            { src: "/ExampleWeb/BarF/BFI2.png" },
-            { src: "/ExampleWeb/BarF/BFI3.png" },
-        ],
-    },
-    {
-        clientName: "חנות אונליין Bar.F",
-        projectType: "חנות אונליין וחיבור למערכות חיצוניות",
-        description:
-            "אתר מכירתי מהיר שמציג את המוצרים בצורה נקייה ומדויקת. דגש על חוויית רכישה חלקה במיוחד במובייל. המערכת מאפשרת ניהול מוצרים ותכנים בצורה עצמאית מצד הלקוחה.",
-        items: [
-            { src: "/ExampleWeb/BarF/BarF.png" },
-            { src: "/ExampleWeb/BarF/BFI1.png" },
-            { src: "/ExampleWeb/BarF/BFI2.png" },
-            { src: "/ExampleWeb/BarF/BFI3.png" },
-        ],
-    },
-    {
-        clientName: "מערכת ניהול ל-Bar.F",
-        projectType: "מערכת מותאמת אישית לעסק",
-        description:
-            "פאנל ניהול פנימי שתפור לצרכים של הסטודיו. המערכת מרימה את העבודה מאקסלים ומסמכים מפוזרים למקום אחד מסודר. מבנה מסכים מדויק שעוזר ללקוחה לשלוט בתהליך בלי ללמוד מערכת מורכבת.",
-        items: [
-            { src: "/ExampleWeb/BarF/BarF.png" },
-            { src: "/ExampleWeb/BarF/BFI1.png" },
-            { src: "/ExampleWeb/BarF/BFI2.png" },
-            { src: "/ExampleWeb/BarF/BFI3.png" },
-        ],
-    },
-];
 
 function MiniCarousel({ items }: { items: CarouselItem[] }) {
     const uid = useId();
@@ -109,11 +82,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
             <div className="relative mx-auto aspect-square w-full max-w-[260px] rounded-full shadow-[0_0_20px_rgba(230,31,116,0.3)]">
                 <div className="absolute inset-0 p-8 sm:p-9 md:p-10">
                     <div className="w-full h-full overflow-hidden border rounded-full bg-black/20 border-white/15">
-                        <div
-                            ref={ref}
-                            dir="ltr"
-                            className="flex h-full overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth"
-                        >
+                        <div ref={ref} dir="ltr" className="flex h-full overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
                             {items.map((item, i) => (
                                 <div key={`${uid}-slide-${i}`} className="w-full shrink-0 snap-center">
                                     {item.node ? (
@@ -157,22 +126,10 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
                     </>
                 )}
 
-                <svg
-                    className="absolute inset-0 transition pointer-events-none opacity-90 hover:opacity-100"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                >
+                <svg className="absolute inset-0 transition pointer-events-none opacity-90 hover:opacity-100" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                     <defs>
                         <linearGradient id={`ring-${uid}`} x1="0" y1="0" x2="1" y2="1">
-                            <animateTransform
-                                attributeName="gradientTransform"
-                                type="rotate"
-                                from="0 0.5 0.5"
-                                to="360 0.5 0.5"
-                                dur="8s"
-                                repeatCount="indefinite"
-                            />
+                            <animateTransform attributeName="gradientTransform" type="rotate" from="0 0.5 0.5" to="360 0.5 0.5" dur="8s" repeatCount="indefinite" />
                             <stop offset="0%" stopColor="#FF2E7E" />
                             <stop offset="100%" stopColor="#FF7745" />
                         </linearGradient>
@@ -188,9 +145,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
                             key={`${uid}-dot-${i}`}
                             onClick={() => goTo(i)}
                             aria-label={`Slide ${i + 1}`}
-                            className={`h-1.5 w-1.5 rounded-full transition-all ${active === i
-                                    ? "w-5 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745]"
-                                    : "bg-white/40 hover:bg-white/60"
+                            className={`h-1.5 w-1.5 rounded-full transition-all ${active === i ? "w-5 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745]" : "bg-white/40 hover:bg-white/60"
                                 }`}
                         />
                     ))}
@@ -200,18 +155,58 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
     );
 }
 
-export default function PortfolioSection({
-    id = "portfolio",
-    blocks,
-    className = "",
-}: PortfolioSectionProps) {
-    const data = blocks?.length ? blocks : DEFAULT_BLOCKS;
+function toBlocks(projects: ProjectItem[]): PortfolioBlock[] {
+    return projects.map((p) => ({
+        clientName: p.clientName,
+        projectType: p.projectType,
+        description: p.description,
+        items: (p.images || []).map((src) => ({ src })),
+    }));
+}
+
+export default function PortfolioSection({ id = "portfolio", blocks, className = "" }: PortfolioSectionProps) {
+    const [data, setData] = useState<PortfolioBlock[]>(blocks || []);
+    const [loading, setLoading] = useState(!blocks);
+
+    useEffect(() => {
+        if (blocks?.length) {
+            setData(blocks);
+            setLoading(false);
+            return;
+        }
+
+        let alive = true;
+
+        const load = async () => {
+            try {
+                setLoading(true);
+                const res = await api.get<ProjectItem[]>("/projects");
+                const active = (res.data || [])
+                    .filter((p) => p.isActive)
+                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+                const next = toBlocks(active).filter((b) => b.items.length > 0);
+                if (alive) setData(next);
+            } catch {
+                if (alive) setData([]);
+            } finally {
+                if (alive) setLoading(false);
+            }
+        };
+
+        load();
+        return () => {
+            alive = false;
+        };
+    }, [blocks]);
+
+    if (loading) return null;
+    if (!data.length) return null;
 
     return (
         <section id={id} className={`w-full pt-16 md:pt-20 pb-24 md:pb-28 ${className}`}>
             <div className="px-4 mx-auto max-w-7xl md:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-                    {data.map((b, i) => (
+                    {data.slice(0, 3).map((b, i) => (
                         <motion.div
                             key={`block-${i}`}
                             variants={fadeUp}
@@ -224,18 +219,12 @@ export default function PortfolioSection({
                             <MiniCarousel items={b.items} />
 
                             <div className="flex flex-col items-center gap-1">
-                                <h3 className="mt-1 text-lg font-semibold text-white">
-                                    {b.clientName}
-                                </h3>
-                                <p className="text-xs font-medium text-white/70">
-                                    {b.projectType}
-                                </p>
+                                <h3 className="mt-1 text-lg font-semibold text-white">{b.clientName}</h3>
+                                <p className="text-xs font-medium text-white/70">{b.projectType}</p>
                             </div>
 
                             <div className="flex flex-col items-center gap-4">
-                                <p className="max-w-sm mx-auto text-sm leading-relaxed text-white/80">
-                                    {b.description}
-                                </p>
+                                <p className="max-w-sm mx-auto text-sm leading-relaxed text-white/80">{b.description}</p>
 
                                 <Link
                                     to="/about-site"
