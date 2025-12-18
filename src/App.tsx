@@ -9,6 +9,8 @@ import CookieBanner from "./components/Cookies/CookieBanner";
 import SocialFloatingBar from"./components/ui/SocialFloatingBar";
 import "./App.css";
 import AboutSitePage from "./Pages/AboutSitePage/AboutSitePage";
+import AdminLoginPage from "./Pages/AdminPage/AdminLoginPage";
+import AdminProtectedRoute from "./routes/AdminProtectedRoute";
 
 function App() {
   return (
@@ -31,6 +33,15 @@ function App() {
             <Route path="/legal" element={<LegalPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/about-site/:id" element={<AboutSitePage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminProtectedRoute>
+                  <AdminPage />
+                </AdminProtectedRoute>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
