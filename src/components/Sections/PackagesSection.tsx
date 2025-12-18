@@ -1,4 +1,10 @@
-import { useState, type TouchEvent } from "react";
+import {
+    useState,
+    useRef,
+    useLayoutEffect,
+    type TouchEvent,
+    type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
@@ -40,7 +46,8 @@ const PACKAGES: Package[] = [
         name: "דף נחיתה",
         price: "₪850",
         subtitle: "עמוד אחד ממוקד ללידים וקמפיינים.",
-        suits: "לעסקים ויזמים שרוצים עמוד אחד מרוכז להצגת שירות, מוצר או קמפיין, בלי להסתבך עם אתר גדול.",
+        suits:
+            "לעסקים ויזמים שרוצים עמוד אחד מרוכז להצגת שירות, מוצר או קמפיין, בלי להסתבך עם אתר גדול.",
         features: [
             "Hero ראשי מעוצב ברמה גבוהה",
             "תוכן שיווקי ממוקד ו-CTA ברור",
@@ -57,7 +64,8 @@ const PACKAGES: Package[] = [
         name: "אתר תדמית",
         price: "₪1,800",
         subtitle: "נוכחות דיגיטלית מלאה שמציגה את העסק בצורה מקצועית.",
-        suits: "לעסקים, יועצים, נותני שירות וחברות קטנות–בינוניות שרוצים אתר שמסביר מי הם, מה הם עושים ולמה לבחור דווקא בהם.",
+        suits:
+            "לעסקים, יועצים, נותני שירות וחברות קטנות–בינוניות שרוצים אתר שמסביר מי הם, מה הם עושים ולמה לבחור דווקא בהם.",
         features: [
             "אתר תדמית מלא הכולל 3–6 עמודים (הכמות משתנה לפי אופי העסק והפרויקט)",
             "עיצוב מודרני ומותאם אישית שמשדר אמינות ומקצועיות",
@@ -77,7 +85,8 @@ const PACKAGES: Package[] = [
         name: "אתר עם חנות אונליין",
         price: "₪5,000",
         subtitle: "גם תדמית מקצועית, גם חנות פעילה או ניהול עצמי של התוכן.",
-        suits: "לעסקים שרוצים גם להציג את העסק בצורה מקצועית וגם לנהל לבד תכנים, מוצרים והזמנות – או להפעיל חנות אונליין מלאה.",
+        suits:
+            "לעסקים שרוצים גם להציג את העסק בצורה מקצועית וגם לנהל לבד תכנים, מוצרים והזמנות – או להפעיל חנות אונליין מלאה.",
         features: [
             "אתר תדמית מלא (בית, אודות, שירותים, יצירת קשר ועוד)",
             "מערכת ניהול תוכן (Admin Panel) לניהול עצמאי של טקסטים, גלריות ותמונות",
@@ -93,6 +102,83 @@ const PACKAGES: Package[] = [
         from: true,
     },
 ];
+
+function FitToViewport({
+    children,
+    reserveTop = 260,
+    reserveBottom = 240,
+    minScale = 0.72,
+}: {
+    children: ReactNode;
+    reserveTop?: number;
+    reserveBottom?: number;
+    minScale?: number;
+}) {
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const [scale, setScale] = useState(1);
+    const [scaledHeight, setScaledHeight] = useState<number | null>(null);
+
+    useLayoutEffect(() => {
+        const el = contentRef.current;
+        if (!el) return;
+
+        const measure = () => {
+            const prevTransform = el.style.transform;
+            const prevOrigin = el.style.transformOrigin;
+
+            el.style.transform = "none";
+            el.style.transformOrigin = "top center";
+
+            const rect = el.getBoundingClientRect();
+            const naturalH = rect.height;
+
+            el.style.transform = prevTransform;
+            el.style.transformOrigin = prevOrigin;
+
+            const availableH = Math.max(
+                320,
+                window.innerHeight - reserveTop - reserveBottom
+            );
+            const nextScaleRaw = availableH / naturalH;
+            const nextScale = Math.min(1, Math.max(minScale, nextScaleRaw));
+
+            setScale(nextScale);
+            setScaledHeight(naturalH * nextScale);
+        };
+
+        measure();
+        const t1 = window.setTimeout(measure, 120);
+        const t2 = window.setTimeout(measure, 360);
+
+        window.addEventListener("resize", measure);
+        window.addEventListener("orientationchange", measure);
+
+        return () => {
+            window.clearTimeout(t1);
+            window.clearTimeout(t2);
+            window.removeEventListener("resize", measure);
+            window.removeEventListener("orientationchange", measure);
+        };
+    }, [reserveTop, reserveBottom, minScale]);
+
+    return (
+        <div
+            className="flex justify-center w-full"
+            style={{ height: scaledHeight ?? "auto" }}
+        >
+            <div
+                ref={contentRef}
+                style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: "top center",
+                    width: "100%",
+                }}
+            >
+                {children}
+            </div>
+        </div>
+    );
+}
 
 export default function PackagesSection({ id, className }: PackagesSectionProps) {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -126,7 +212,8 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
     return (
         <section
             id={id}
-            className={`w-full py-16 md:py-24 px-4 md:px-8 lg:px-12 ${className ?? ""}`}
+            className={`w-full py-16 md:py-24 px-4 md:px-8 lg:px-12 ${className ?? ""
+                }`}
             dir="rtl"
         >
             <div className="max-w-6xl mx-auto">
@@ -169,7 +256,9 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                         onTouchEnd={handleTouchEnd}
                     >
                         <div className="w-11/12 max-w-md">
-                            <PackageCard pkg={PACKAGES[activeIndex]} />
+                            <FitToViewport key={activeIndex} reserveTop={260} reserveBottom={240} minScale={0.72}>
+                                <PackageCard pkg={PACKAGES[activeIndex]} />
+                            </FitToViewport>
                         </div>
                     </motion.div>
 
@@ -242,9 +331,9 @@ function PackageCard({ pkg }: PackageCardProps) {
         <div
             className="relative flex flex-col w-full max-w-md mx-auto border rounded-3xl"
             style={{
-                padding: "2.1rem 1.9rem 1.7rem",
-                background:
-                    "linear-gradient(135deg, rgba(9,9,15,0.9), rgba(24,9,30,0.95))",
+                padding:
+                    "clamp(1.35rem, 4vw, 2.1rem) clamp(1.05rem, 4.2vw, 1.9rem) clamp(1.05rem, 3vw, 1.7rem)",
+                background: "linear-gradient(135deg, rgba(9,9,15,0.9), rgba(24,9,30,0.95))",
                 borderColor: "rgba(255,119,69,0.95)",
                 boxShadow: "0 0 28px rgba(255,119,69,0.45)",
                 borderWidth: "2px",
@@ -263,16 +352,12 @@ function PackageCard({ pkg }: PackageCardProps) {
                     >
                         {pkg.price}
                     </div>
-
-
                 </div>
             )}
 
             <div className="flex flex-col max-w-xs mx-auto text-center sm:max-w-sm gap-7">
                 <div className="flex flex-col items-center gap-1.5 text-center">
-                    <h3 className="text-xl font-bold text-white md:text-2xl">
-                        {pkg.name}
-                    </h3>
+                    <h3 className="text-xl font-bold text-white md:text-2xl">{pkg.name}</h3>
 
                     <div className="flex items-center justify-center w-full max-w-[220px] gap-1">
                         <span className="h-[1px] flex-1 rounded-full bg-gradient-to-l from-transparent via-[#FF2E7E] to-transparent opacity-70" />
@@ -280,9 +365,7 @@ function PackageCard({ pkg }: PackageCardProps) {
                         <span className="h-[1px] flex-1 rounded-full bg-gradient-to-r from-transparent via-[#FF7745] to-transparent opacity-70" />
                     </div>
 
-                    <p className="mt-1 text-sm leading-relaxed text-white/80">
-                        {pkg.subtitle}
-                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-white/80">{pkg.subtitle}</p>
                 </div>
 
                 <div className="flex flex-col gap-8 text-sm">
@@ -293,9 +376,7 @@ function PackageCard({ pkg }: PackageCardProps) {
                             </p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
                         </div>
-                        <p className="text-sm leading-snug text-center text-white/85">
-                            {pkg.suits}
-                        </p>
+                        <p className="text-sm leading-snug text-center text-white/85">{pkg.suits}</p>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -321,9 +402,7 @@ function PackageCard({ pkg }: PackageCardProps) {
                             </p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
                         </div>
-                        <p className="text-sm leading-snug text-center text-white/85">
-                            {pkg.time}
-                        </p>
+                        <p className="text-sm leading-snug text-center text-white/85">{pkg.time}</p>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -333,9 +412,7 @@ function PackageCard({ pkg }: PackageCardProps) {
                             </p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
                         </div>
-                        <p className="text-sm leading-snug text-center text-white/85">
-                            {pkg.note}
-                        </p>
+                        <p className="text-sm leading-snug text-center text-white/85">{pkg.note}</p>
                     </div>
                 </div>
             </div>
@@ -361,8 +438,7 @@ function PackageCard({ pkg }: PackageCardProps) {
                     className="inline-flex items-center justify-center gap-2 text-center border rounded-3xl font-[Heebo] text-[14px] md:text-[15px] text-white/90 transition-all hover:shadow-[0_0_26px_rgba(58,134,255,0.7)]"
                     style={{
                         padding: "0.45rem 1.6rem",
-                        background:
-                            "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
+                        background: "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
                         borderColor: "rgba(58,134,255,0.95)",
                         boxShadow: "0 0 20px rgba(58,134,255,0.5)",
                     }}

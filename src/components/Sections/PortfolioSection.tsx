@@ -1,4 +1,4 @@
-import { useId, useRef, useEffect, useState, type ReactNode } from "react";
+import { useId, useRef, useEffect, useState, type ReactNode, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";
@@ -8,6 +8,7 @@ import { api } from "../../api/axios";
 type CarouselItem = { src?: string; alt?: string; node?: ReactNode };
 
 type PortfolioBlock = {
+    projectId: string;
     items: CarouselItem[];
     clientName: string;
     projectType: string;
@@ -77,11 +78,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
         <div className="relative flex flex-col items-center w-full gap-6 mx-auto">
             <div className="relative mx-auto aspect-square w-full max-w-[320px] sm:max-w-[340px] md:max-w-[360px] rounded-full shadow-[0_0_24px_rgba(230,31,116,0.34)]">
                 <div className="absolute inset-[8px] sm:inset-[10px] overflow-hidden rounded-full bg-black/15">
-                    <div
-                        ref={ref}
-                        dir="ltr"
-                        className="flex h-full overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth"
-                    >
+                    <div ref={ref} dir="ltr" className="flex h-full overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
                         {items.map((item, i) => (
                             <div key={`${uid}-slide-${i}`} className="w-full shrink-0 snap-center">
                                 {item.node ? (
@@ -124,12 +121,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
                     </>
                 )}
 
-                <svg
-                    className="absolute inset-0 pointer-events-none opacity-95"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                >
+                <svg className="absolute inset-0 pointer-events-none opacity-95" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                     <defs>
                         <linearGradient id={`ring-${uid}`} x1="0" y1="0" x2="1" y2="1">
                             <animateTransform
@@ -167,6 +159,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
 
 function toBlocks(projects: ProjectItem[]): PortfolioBlock[] {
     return projects.map((p) => ({
+        projectId: p._id,
         clientName: p.clientName,
         projectType: p.projectType,
         description: p.description,
@@ -177,11 +170,18 @@ function toBlocks(projects: ProjectItem[]): PortfolioBlock[] {
 export default function PortfolioSection({ id = "portfolio", blocks, className = "" }: PortfolioSectionProps) {
     const [data, setData] = useState<PortfolioBlock[]>(blocks || []);
     const [loading, setLoading] = useState(!blocks);
+    const [visibleCount, setVisibleCount] = useState(4);
+
+    const accentGradient = useMemo(
+        () => "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
+        []
+    );
 
     useEffect(() => {
         if (blocks?.length) {
             setData(blocks);
             setLoading(false);
+            setVisibleCount(4);
             return;
         }
 
@@ -195,7 +195,10 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
                     .filter((p) => p.isActive)
                     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 const next = toBlocks(active).filter((b) => b.items.length > 0);
-                if (alive) setData(next);
+                if (alive) {
+                    setData(next);
+                    setVisibleCount(4);
+                }
             } catch {
                 if (alive) setData([]);
             } finally {
@@ -212,7 +215,12 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
     if (loading) return null;
     if (!data.length) return null;
 
-    const shown = data.slice(0, 3);
+    const shown = data.slice(0, Math.min(visibleCount, data.length));
+    const canLoadMore = visibleCount < data.length;
+
+    const loadMore = () => {
+        setVisibleCount((prev) => Math.min(prev + 4, data.length));
+    };
 
     return (
         <section id={id} dir="rtl" className={`w-full pt-16 md:pt-20 pb-24 md:pb-28 ${className}`}>
@@ -220,7 +228,7 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
                 <div className="flex flex-wrap justify-center gap-10">
                     {shown.map((b, i) => (
                         <motion.div
-                            key={`block-${i}`}
+                            key={`block-${b.projectId}`}
                             variants={fadeUp}
                             initial="hidden"
                             whileInView="show"
@@ -239,7 +247,7 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
                                 <p className="max-w-sm mx-auto text-sm leading-relaxed text-white/80">{b.description}</p>
 
                                 <Link
-                                    to="/about-site"
+                                    to={`/about-site/${b.projectId}`}
                                     title="על האתר"
                                     className="inline-flex justify-center items-center rounded-2xl border border-[#3A86FF]/65 bg-white/5 px-9 py-3 min-w-[10.5rem] text-white text-center hover:bg-white/[0.08] hover:shadow-[0_0_18px_rgba(58,134,255,0.55)] focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/70"
                                 >
@@ -251,6 +259,19 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
                         </motion.div>
                     ))}
                 </div>
+
+                {canLoadMore ? (
+                    <div className="flex justify-center mt-10">
+                        <button
+                            type="button"
+                            onClick={loadMore}
+                            className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-9 py-3 text-white/90 hover:bg-white/5 hover:shadow-[0_0_18px_rgba(58,134,255,0.35)] focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/70"
+                            style={{ background: accentGradient }}
+                        >
+                            טען עוד פרויקטים
+                        </button>
+                    </div>
+                ) : null}
             </div>
         </section>
     );
