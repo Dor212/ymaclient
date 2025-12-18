@@ -32,11 +32,7 @@ const fadeUp: Variants = {
     show: (i = 0) => ({
         opacity: 1,
         y: 0,
-        transition: {
-            duration: 0.6,
-            delay: 0.12 * i,
-            ease: [0.22, 1, 0.36, 1],
-        },
+        transition: { duration: 0.6, delay: 0.12 * i, ease: [0.22, 1, 0.36, 1] },
     }),
 };
 
@@ -78,26 +74,28 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
     const atEnd = active === count - 1;
 
     return (
-        <div className="relative w-full max-w-sm mx-auto flex flex-col items-center gap-[28px]">
-            <div className="relative mx-auto aspect-square w-full max-w-[260px] rounded-full shadow-[0_0_20px_rgba(230,31,116,0.3)]">
-                <div className="absolute inset-0 p-8 sm:p-9 md:p-10">
-                    <div className="w-full h-full overflow-hidden border rounded-full bg-black/20 border-white/15">
-                        <div ref={ref} dir="ltr" className="flex h-full overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
-                            {items.map((item, i) => (
-                                <div key={`${uid}-slide-${i}`} className="w-full shrink-0 snap-center">
-                                    {item.node ? (
-                                        <div className="w-full h-full">{item.node}</div>
-                                    ) : (
-                                        <img
-                                            src={item.src}
-                                            alt={item.alt || `Portfolio ${i + 1}`}
-                                            className="object-contain w-full h-full"
-                                            draggable={false}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+        <div className="relative flex flex-col items-center w-full gap-6 mx-auto">
+            <div className="relative mx-auto aspect-square w-full max-w-[320px] sm:max-w-[340px] md:max-w-[360px] rounded-full shadow-[0_0_24px_rgba(230,31,116,0.34)]">
+                <div className="absolute inset-[8px] sm:inset-[10px] overflow-hidden rounded-full bg-black/15">
+                    <div
+                        ref={ref}
+                        dir="ltr"
+                        className="flex h-full overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth"
+                    >
+                        {items.map((item, i) => (
+                            <div key={`${uid}-slide-${i}`} className="w-full shrink-0 snap-center">
+                                {item.node ? (
+                                    <div className="w-full h-full">{item.node}</div>
+                                ) : (
+                                    <img
+                                        src={item.src}
+                                        alt={item.alt || `Portfolio ${i + 1}`}
+                                        className="object-cover w-full h-full"
+                                        draggable={false}
+                                    />
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -108,7 +106,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
                             aria-label="Previous"
                             aria-disabled={atStart}
                             disabled={atStart}
-                            className={`absolute leading-none -translate-y-1/2 left-4 top-1/2 p-2 rounded-full bg-black/30 transition ${atStart ? "opacity-40 pointer-events-none" : "hover:shadow-[0_0_12px_#e61f74]"
+                            className={`absolute leading-none -translate-y-1/2 left-3 top-1/2 p-2.5 rounded-full bg-black/35 transition cursor-pointer ${atStart ? "opacity-40 pointer-events-none" : "hover:shadow-[0_0_12px_#e61f74]"
                                 }`}
                         >
                             <IoIosArrowBack className="text-4xl md:text-5xl" />
@@ -118,7 +116,7 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
                             aria-label="Next"
                             aria-disabled={atEnd}
                             disabled={atEnd}
-                            className={`absolute leading-none -translate-y-1/2 right-4 top-1/2 p-2 rounded-full bg-black/30 transition ${atEnd ? "opacity-40 pointer-events-none" : "hover:shadow-[0_0_12px_#e61f74]"
+                            className={`absolute leading-none -translate-y-1/2 right-3 top-1/2 p-2.5 rounded-full bg-black/35 transition cursor-pointer ${atEnd ? "opacity-40 pointer-events-none" : "hover:shadow-[0_0_12px_#e61f74]"
                                 }`}
                         >
                             <IoIosArrowForward className="text-4xl md:text-5xl" />
@@ -126,10 +124,22 @@ function MiniCarousel({ items }: { items: CarouselItem[] }) {
                     </>
                 )}
 
-                <svg className="absolute inset-0 transition pointer-events-none opacity-90 hover:opacity-100" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <svg
+                    className="absolute inset-0 pointer-events-none opacity-95"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                >
                     <defs>
                         <linearGradient id={`ring-${uid}`} x1="0" y1="0" x2="1" y2="1">
-                            <animateTransform attributeName="gradientTransform" type="rotate" from="0 0.5 0.5" to="360 0.5 0.5" dur="8s" repeatCount="indefinite" />
+                            <animateTransform
+                                attributeName="gradientTransform"
+                                type="rotate"
+                                from="0 0.5 0.5"
+                                to="360 0.5 0.5"
+                                dur="8s"
+                                repeatCount="indefinite"
+                            />
                             <stop offset="0%" stopColor="#FF2E7E" />
                             <stop offset="100%" stopColor="#FF7745" />
                         </linearGradient>
@@ -202,11 +212,13 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
     if (loading) return null;
     if (!data.length) return null;
 
+    const shown = data.slice(0, 3);
+
     return (
-        <section id={id} className={`w-full pt-16 md:pt-20 pb-24 md:pb-28 ${className}`}>
+        <section id={id} dir="rtl" className={`w-full pt-16 md:pt-20 pb-24 md:pb-28 ${className}`}>
             <div className="px-4 mx-auto max-w-7xl md:px-6 lg:px-8">
-                <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-                    {data.slice(0, 3).map((b, i) => (
+                <div className="flex flex-wrap justify-center gap-10">
+                    {shown.map((b, i) => (
                         <motion.div
                             key={`block-${i}`}
                             variants={fadeUp}
@@ -214,7 +226,7 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
                             whileInView="show"
                             viewport={{ once: false, margin: "-80px" }}
                             custom={i}
-                            className="flex flex-col items-center gap-4 text-center"
+                            className="w-full max-w-lg md:w-[min(520px,calc(50%-1.25rem))] flex flex-col items-center gap-4 text-center"
                         >
                             <MiniCarousel items={b.items} />
 

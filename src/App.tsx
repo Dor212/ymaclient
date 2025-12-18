@@ -8,6 +8,7 @@ import AdminPage from "./Pages/AdminPage/AdminPage";
 import CookieBanner from "./components/Cookies/CookieBanner";
 import SocialFloatingBar from"./components/ui/SocialFloatingBar";
 import "./App.css";
+import AboutSitePage from "./Pages/AboutSitePage/AboutSitePage";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/legal" element={<LegalPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/about-site/:id" element={<AboutSitePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
