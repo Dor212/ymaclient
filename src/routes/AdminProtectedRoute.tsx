@@ -3,7 +3,11 @@ import { Navigate } from "react-router-dom";
 import { api } from "../api/axios";
 import { getAccessToken, setAccessToken } from "../api/authToken";
 
-export default function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+export default function AdminProtectedRoute({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const [loading, setLoading] = useState(true);
     const [ok, setOk] = useState(false);
 
