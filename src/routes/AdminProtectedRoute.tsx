@@ -9,21 +9,25 @@ export default function AdminProtectedRoute({ children }: { children: React.Reac
 
     useEffect(() => {
         const run = async () => {
-            if (getAccessToken()) {
+            const token = getAccessToken();
+            if (token) {
                 setOk(true);
                 setLoading(false);
                 return;
             }
+
             try {
                 const r = await api.post("/admin/auth/refresh");
                 setAccessToken(r.data.accessToken);
                 setOk(true);
             } catch {
+                setAccessToken("");
                 setOk(false);
             } finally {
                 setLoading(false);
             }
         };
+
         run();
     }, []);
 

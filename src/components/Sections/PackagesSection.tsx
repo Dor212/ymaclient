@@ -108,11 +108,13 @@ function FitToViewport({
     reserveTop = 260,
     reserveBottom = 240,
     minScale = 0.72,
+    extraSpace = 56,
 }: {
     children: ReactNode;
     reserveTop?: number;
     reserveBottom?: number;
     minScale?: number;
+    extraSpace?: number;
 }) {
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [scale, setScale] = useState(1);
@@ -122,6 +124,9 @@ function FitToViewport({
         const el = contentRef.current;
         if (!el) return;
 
+        let raf = 0;
+        let ro: ResizeObserver | null = null;
+
         const measure = () => {
             const prevTransform = el.style.transform;
             const prevOrigin = el.style.transformOrigin;
@@ -129,43 +134,49 @@ function FitToViewport({
             el.style.transform = "none";
             el.style.transformOrigin = "top center";
 
-            const rect = el.getBoundingClientRect();
-            const naturalH = rect.height;
+            const naturalH = el.scrollHeight;
 
             el.style.transform = prevTransform;
             el.style.transformOrigin = prevOrigin;
 
-            const availableH = Math.max(
-                320,
-                window.innerHeight - reserveTop - reserveBottom
-            );
-            const nextScaleRaw = availableH / naturalH;
+            const availableH = Math.max(320, window.innerHeight - reserveTop - reserveBottom);
+            const nextScaleRaw = availableH / Math.max(1, naturalH);
             const nextScale = Math.min(1, Math.max(minScale, nextScaleRaw));
 
             setScale(nextScale);
             setScaledHeight(naturalH * nextScale);
         };
 
-        measure();
-        const t1 = window.setTimeout(measure, 120);
-        const t2 = window.setTimeout(measure, 360);
+        const schedule = () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(measure);
+        };
 
-        window.addEventListener("resize", measure);
-        window.addEventListener("orientationchange", measure);
+        schedule();
+
+        const t1 = window.setTimeout(schedule, 120);
+        const t2 = window.setTimeout(schedule, 420);
+
+        if (typeof ResizeObserver !== "undefined") {
+            ro = new ResizeObserver(() => schedule());
+            ro.observe(el);
+        }
+
+        window.addEventListener("resize", schedule);
+        window.addEventListener("orientationchange", schedule);
 
         return () => {
+            cancelAnimationFrame(raf);
             window.clearTimeout(t1);
             window.clearTimeout(t2);
-            window.removeEventListener("resize", measure);
-            window.removeEventListener("orientationchange", measure);
+            ro?.disconnect();
+            window.removeEventListener("resize", schedule);
+            window.removeEventListener("orientationchange", schedule);
         };
     }, [reserveTop, reserveBottom, minScale]);
 
     return (
-        <div
-            className="flex justify-center w-full"
-            style={{ height: scaledHeight ?? "auto" }}
-        >
+        <div className="flex justify-center w-full" style={{ height: scaledHeight ? scaledHeight + extraSpace : "auto" }}>
             <div
                 ref={contentRef}
                 style={{
@@ -184,13 +195,8 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
     const [activeIndex, setActiveIndex] = useState(0);
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-    const handleNext = () => {
-        setActiveIndex((prev) => (prev + 1) % PACKAGES.length);
-    };
-
-    const handlePrev = () => {
-        setActiveIndex((prev) => (prev === 0 ? PACKAGES.length - 1 : prev - 1));
-    };
+    const handleNext = () => setActiveIndex((prev) => (prev + 1) % PACKAGES.length);
+    const handlePrev = () => setActiveIndex((prev) => (prev === 0 ? PACKAGES.length - 1 : prev - 1));
 
     const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
         setTouchStartX(e.touches[0].clientX);
@@ -212,8 +218,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
     return (
         <section
             id={id}
-            className={`w-full py-16 md:py-24 px-4 md:px-8 lg:px-12 ${className ?? ""
-                }`}
+            className={`relative z-10 w-full pt-16 pb-24 md:pt-24 md:pb-32 px-4 md:px-8 lg:px-12 ${className ?? ""}`}
             dir="rtl"
         >
             <div className="max-w-6xl mx-auto">
@@ -221,7 +226,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                     variants={fadeUp}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ margin: "-80px" }}
+                    viewport={{ once: true, amount: 0.35 }}
                     className="text-center"
                 >
                     <h2 className="mb-3 text-3xl font-extrabold md:text-4xl">
@@ -250,15 +255,43 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                         variants={fadeUp}
                         initial="hidden"
                         whileInView="show"
-                        viewport={{ margin: "-80px" }}
+                        viewport={{ once: true, amount: 0.35 }}
                         className="flex justify-center px-4"
-                        onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
                     >
-                        <div className="w-11/12 max-w-md">
-                            <FitToViewport key={activeIndex} reserveTop={260} reserveBottom={240} minScale={0.72}>
+                        <div
+                            className="relative w-11/12 max-w-md"
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            <FitToViewport
+                                key={activeIndex}
+                                reserveTop={260}
+                                reserveBottom={240}
+                                minScale={0.72}
+                                extraSpace={72}
+                            >
                                 <PackageCard pkg={PACKAGES[activeIndex]} />
                             </FitToViewport>
+
+                            <button
+                                type="button"
+                                onClick={handlePrev}
+                                aria-label="החבילה הקודמת"
+                                className="absolute left-0 flex items-center justify-center w-10 h-10 transition -translate-x-3 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/30 text-white/85 backdrop-blur-md hover:border-white/60 hover:bg-white/5 active:scale-95"
+                                style={{ boxShadow: "0 0 18px rgba(58,134,255,0.25)" }}
+                            >
+                                <span className="text-lg leading-none">›</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                aria-label="החבילה הבאה"
+                                className="absolute right-0 flex items-center justify-center w-10 h-10 transition translate-x-3 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/30 text-white/85 backdrop-blur-md hover:border-white/60 hover:bg-white/5 active:scale-95"
+                                style={{ boxShadow: "0 0 18px rgba(0,201,167,0.22)" }}
+                            >
+                                <span className="text-lg leading-none">‹</span>
+                            </button>
                         </div>
                     </motion.div>
 
@@ -266,23 +299,17 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                         variants={fadeUp}
                         initial="hidden"
                         whileInView="show"
-                        viewport={{ margin: "-80px" }}
-                        className="flex items-center justify-center gap-4"
+                        viewport={{ once: true, amount: 0.35 }}
+                        className="flex items-center justify-center"
                         style={{ marginTop: "1.1rem", marginBottom: "2rem" }}
                     >
-                        <button
-                            type="button"
-                            onClick={handlePrev}
-                            className="flex items-center justify-center w-8 h-8 text-xs transition border rounded-full border-white/20 text-white/80 hover:border-white/60 hover:bg-white/5"
-                        >
-                            ‹
-                        </button>
                         <div className="flex gap-2">
                             {PACKAGES.map((pkg, index) => (
                                 <button
                                     key={pkg.id}
                                     type="button"
                                     onClick={() => setActiveIndex(index)}
+                                    aria-label={`מעבר לחבילה ${index + 1}`}
                                     className={`h-2.5 rounded-full transition-all ${index === activeIndex
                                             ? "w-6 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_16px_rgba(255,46,126,0.7)]"
                                             : "w-2.5 bg-white/20"
@@ -290,13 +317,6 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                                 />
                             ))}
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleNext}
-                            className="flex items-center justify-center w-8 h-8 text-xs transition border rounded-full border-white/20 text-white/80 hover:border-white/60 hover:bg-white/5"
-                        >
-                            ›
-                        </button>
                     </motion.div>
                 </div>
 
@@ -307,7 +327,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                             variants={fadeUp}
                             initial="hidden"
                             whileInView="show"
-                            viewport={{ margin: "-80px" }}
+                            viewport={{ once: true, amount: 0.35 }}
                             custom={index}
                             className="flex justify-center"
                         >
@@ -340,7 +360,7 @@ function PackageCard({ pkg }: PackageCardProps) {
             }}
         >
             {pkg.id === "landing" && (
-                <div className="absolute -top-4 left-4 -rotate-6">
+                <div className="absolute top-4 left-4 -rotate-6">
                     <div
                         className="inline-flex items-center justify-center text-center border rounded-3xl font-[Heebo] text-[13px] md:text-[14px] text-white/90"
                         style={{
@@ -371,9 +391,7 @@ function PackageCard({ pkg }: PackageCardProps) {
                 <div className="flex flex-col gap-8 text-sm">
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">
-                                למי זה מתאים?
-                            </p>
+                            <p className="text-xs font-semibold text-center text-white/70">למי זה מתאים?</p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
                         </div>
                         <p className="text-sm leading-snug text-center text-white/85">{pkg.suits}</p>
@@ -381,9 +399,7 @@ function PackageCard({ pkg }: PackageCardProps) {
 
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">
-                                מה תקבלו?
-                            </p>
+                            <p className="text-xs font-semibold text-center text-white/70">מה תקבלו?</p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#3A86FF] to-[#00C9A7] opacity-70" />
                         </div>
                         <ul className="flex flex-col gap-1.5 text-sm text-white/85 leading-snug">
@@ -397,9 +413,7 @@ function PackageCard({ pkg }: PackageCardProps) {
 
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">
-                                זמן הקמה
-                            </p>
+                            <p className="text-xs font-semibold text-center text-white/70">זמן הקמה</p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
                         </div>
                         <p className="text-sm leading-snug text-center text-white/85">{pkg.time}</p>
@@ -407,9 +421,7 @@ function PackageCard({ pkg }: PackageCardProps) {
 
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">
-                                {pkg.noteTitle}
-                            </p>
+                            <p className="text-xs font-semibold text-center text-white/70">{pkg.noteTitle}</p>
                             <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
                         </div>
                         <p className="text-sm leading-snug text-center text-white/85">{pkg.note}</p>

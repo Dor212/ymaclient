@@ -24,10 +24,10 @@ const HomePage = () => {
                             <LogoHero />
                         </section>
 
-                        <div className="mt-20 md:mt-28 flex flex-col gap-[8rem] md:gap-[11rem]">
+                        <div className="mt-10 md:mt-14 flex flex-col gap-[4rem] md:gap-[5.5rem]">
                             <AboutSection id="about" className="w-full" />
                             <PortfolioSection id="portfolio" />
-                            <ProcessSectionA id="process"/>
+                            <ProcessSectionA id="process" />
                             <PackagesSection id="packages" />
                             <AskClientsSection id="ask-clients" />
                         </div>

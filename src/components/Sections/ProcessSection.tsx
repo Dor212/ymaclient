@@ -1,5 +1,12 @@
-import { useMemo, useRef } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+    motion,
+    useAnimationControls,
+    useInView,
+    useReducedMotion,
+    useScroll,
+    useMotionValueEvent,
+} from "framer-motion";
 import type { Variants } from "framer-motion";
 import ProcessOrbits from "../ui/ProcessOrbits";
 
@@ -17,53 +24,43 @@ type Step = { title: string; desc: string };
 const TITLE_TEXT = "הדרך שלנו";
 
 const titleEnter: Variants = {
-    hidden: {
-        opacity: 0,
-        y: 22,
-        letterSpacing: "0.18em",
-    },
+    hidden: { opacity: 0, y: 18, letterSpacing: "0.18em" },
     show: {
         opacity: 1,
         y: 0,
         letterSpacing: "-0.02em",
-        transition: {
-            duration: 1.2,
-            ease: easeCurve,
-        },
+        transition: { duration: 1.1, ease: easeCurve },
     },
 };
 
 const subtitleEnter: Variants = {
-    hidden: { opacity: 0, y: 18 },
+    hidden: { opacity: 0, y: 14, transition: { duration: 0.4, ease: easeCurve } },
     show: {
         opacity: 1,
         y: 0,
-        transition: {
-            duration: 1.1,
-            delay: 0.25,
-            ease: easeCurve,
-        },
+        transition: { duration: 0.95, delay: 0.18, ease: easeCurve },
     },
 };
 
 const stepsContainer: Variants = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.28, delayChildren: 0.2 } },
+    hidden: { transition: { staggerChildren: 0.08, staggerDirection: -1 } },
+    show: (dir: 1 | -1) => ({
+        transition: {
+            staggerChildren: 0.22,
+            delayChildren: 0.06,
+            staggerDirection: dir === 1 ? 1 : -1,
+        },
+    }),
 };
 
 const stepEnter: Variants = {
-    hidden: { opacity: 0, y: 36, clipPath: "inset(0 0 100% 0)" },
-    show: {
-        opacity: 1,
-        y: 0,
-        clipPath: "inset(0 0 0% 0)",
-        transition: { duration: 1.05, ease: easeCurve },
-    },
+    hidden: { opacity: 0, y: 22, transition: { duration: 0.35, ease: easeCurve } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: easeCurve } },
 };
 
 const connectorEnter: Variants = {
-    hidden: { opacity: 0, scaleY: 0 },
-    show: { opacity: 1, scaleY: 1, transition: { duration: 0.85, ease: easeCurve } },
+    hidden: { opacity: 0, scaleY: 0.15, transition: { duration: 0.28, ease: easeCurve } },
+    show: { opacity: 1, scaleY: 1, transition: { duration: 0.75, ease: easeCurve } },
 };
 
 const stepQuestions: string[] = [
@@ -82,7 +79,42 @@ export default function ProcessSectionA({
     const reduced = useReducedMotion() ?? false;
 
     const headerRef = useRef<HTMLDivElement | null>(null);
-    const headerInView = useInView(headerRef, { amount: 0.85 });
+    const triggerRef = useRef<HTMLDivElement | null>(null);
+
+    const headerInView = useInView(headerRef, { amount: 0.6, once: false });
+
+    const stepsTriggerInView = useInView(triggerRef, {
+        once: false,
+        amount: 0.01,
+        margin: "0px 0px -55% 0px",
+    });
+
+    const controls = useAnimationControls();
+
+    const { scrollY } = useScroll();
+    const lastY = useRef(0);
+    const dirRef = useRef<1 | -1>(1);
+    const [dirState, setDirState] = useState<1 | -1>(1);
+
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        dirRef.current = latest >= lastY.current ? 1 : -1;
+        lastY.current = latest;
+    });
+
+    useEffect(() => {
+        if (reduced) return;
+
+        if (stepsTriggerInView) {
+            const d = dirRef.current;
+            setDirState(d);
+            controls.set("hidden");
+            requestAnimationFrame(() => {
+                controls.start("show");
+            });
+        } else {
+            controls.set("hidden");
+        }
+    }, [stepsTriggerInView, reduced, controls]);
 
     const steps: Step[] = useMemo(
         () => [
@@ -120,7 +152,7 @@ export default function ProcessSectionA({
         <section
             id={id}
             dir="rtl"
-            className={`relative w-full max-w-full py-24 md:py-32 hide-inner-scrollbars ${className}`}
+            className={`relative w-full max-w-full py-16 md:py-20 hide-inner-scrollbars ${className}`}
         >
             <div className="max-w-6xl px-4 mx-auto">
                 <div ref={headerRef} className="text-center">
@@ -145,53 +177,95 @@ export default function ProcessSectionA({
 
                     <div className="h-1 md:h-2" />
 
-                    <motion.div
-                        variants={subtitleEnter}
-                        initial="hidden"
-                        animate={headerInView ? "show" : "hidden"}
-                        className="flex justify-center"
-                    >
-                        <div
-                            className="inline-flex items-center justify-center text-center border rounded-3xl"
-                            style={{
-                                padding: "0.3rem 1rem",
-                                background: "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
-                                borderColor: "rgba(58,134,255,0.95)",
-                                boxShadow: "0 0 20px rgba(58,134,255,0.45)",
-                            }}
-                        >
-                            <p className="font-[Heebo] text-[14px] md:text-[15px] text-white/90">
-                                ארבעה שלבים חדים, מרעיון לאתר שעובד בשבילך.
-                            </p>
+                    {reduced ? (
+                        <div className="flex justify-center">
+                            <div
+                                className="inline-flex items-center justify-center text-center border rounded-3xl"
+                                style={{
+                                    padding: "0.3rem 1rem",
+                                    background:
+                                        "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
+                                    borderColor: "rgba(58,134,255,0.95)",
+                                    boxShadow: "0 0 20px rgba(58,134,255,0.45)",
+                                }}
+                            >
+                                <p className="font-[Heebo] text-[14px] md:text-[15px] text-white/90">
+                                    ארבעה שלבים חדים, מרעיון לאתר שעובד בשבילך.
+                                </p>
+                            </div>
                         </div>
+                    ) : (
+                        <motion.div
+                            variants={subtitleEnter}
+                            initial="hidden"
+                            animate={headerInView ? "show" : "hidden"}
+                            className="flex justify-center"
+                        >
+                            <div
+                                className="inline-flex items-center justify-center text-center border rounded-3xl"
+                                style={{
+                                    padding: "0.3rem 1rem",
+                                    background:
+                                        "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
+                                    borderColor: "rgba(58,134,255,0.95)",
+                                    boxShadow: "0 0 20px rgba(58,134,255,0.45)",
+                                }}
+                            >
+                                <p className="font-[Heebo] text-[14px] md:text-[15px] text-white/90">
+                                    ארבעה שלבים חדים, מרעיון לאתר שעובד בשבילך.
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
 
-                    </motion.div>
+                    <div ref={triggerRef} aria-hidden className="h-1" />
                 </div>
 
-                <div aria-hidden className="h-[3.75rem] md:h-[4.5rem]" />
+                <div aria-hidden className="h-8 md:h-10" />
 
-                <motion.div
-                    className="relative flex flex-col items-center max-w-3xl mx-auto"
-                    variants={stepsContainer}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: false, amount: 0.55 }}
-                >
-                    {steps.map((s, i) => (
-                        <div key={s.title} className="flex flex-col items-center w-full">
-                            <FloatingStep
-                                index={i}
-                                title={s.title}
-                                desc={s.desc}
-                                ringFrom={ringFrom}
-                                ringTo={ringTo}
-                            />
-                            {i < steps.length - 1 && (
-                                <Connector ringFrom={ringFrom} ringTo={ringTo} reduced={reduced} />
-                            )}
-                        </div>
-                    ))}
-                </motion.div>
+                {reduced ? (
+                    <div className="relative flex flex-col items-center max-w-3xl mx-auto">
+                        {steps.map((s, i) => (
+                            <div key={s.title} className="flex flex-col items-center w-full">
+                                <FloatingStep
+                                    index={i}
+                                    title={s.title}
+                                    desc={s.desc}
+                                    ringFrom={ringFrom}
+                                    ringTo={ringTo}
+                                    reduced
+                                />
+                                {i < steps.length - 1 && (
+                                    <Connector ringFrom={ringFrom} ringTo={ringTo} reduced />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <motion.div
+                        className="relative flex flex-col items-center max-w-3xl mx-auto"
+                        variants={stepsContainer}
+                        initial="hidden"
+                        animate={controls}
+                        custom={dirState}
+                    >
+                        {steps.map((s, i) => (
+                            <div key={s.title} className="flex flex-col items-center w-full">
+                                <FloatingStep
+                                    index={i}
+                                    title={s.title}
+                                    desc={s.desc}
+                                    ringFrom={ringFrom}
+                                    ringTo={ringTo}
+                                    reduced={false}
+                                />
+                                {i < steps.length - 1 && (
+                                    <Connector ringFrom={ringFrom} ringTo={ringTo} reduced={false} />
+                                )}
+                            </div>
+                        ))}
+                    </motion.div>
+                )}
             </div>
 
             <style>{`
@@ -225,12 +299,14 @@ function FloatingStep({
     desc,
     ringFrom,
     ringTo,
+    reduced,
 }: {
     index: number;
     title: string;
     desc: string;
     ringFrom: string;
     ringTo: string;
+    reduced: boolean;
 }) {
     const blocks = desc
         .split("\n")
@@ -248,17 +324,12 @@ function FloatingStep({
                     : "/icons/planet4.png";
 
     const iconPositionStyle =
-        index % 2 === 0
-            ? { top: "24px", left: "6%" }
-            : { top: "24px", right: "6%" };
+        index % 2 === 0 ? { top: "24px", left: "6%" } : { top: "24px", right: "6%" };
 
     const question = stepQuestions[index] ?? "מה קורה בשלב הזה בפועל?";
 
-    return (
-        <motion.div
-            className="relative w-full max-w-2xl px-6 pt-8 pb-3 text-center sm:px-10 md:px-6 md:pt-9 md:pb-4"
-            variants={stepEnter}
-        >
+    const inner = (
+        <>
             <ProcessOrbits
                 src={iconSrc}
                 className="absolute w-12 h-12 md:w-16 md:h-16 opacity-30"
@@ -316,6 +387,23 @@ function FloatingStep({
                     </div>
                 </div>
             </div>
+        </>
+    );
+
+    if (reduced) {
+        return (
+            <div className="relative w-full max-w-2xl px-6 pb-3 text-center pt-7 sm:px-10 md:px-6 md:pt-8 md:pb-4">
+                {inner}
+            </div>
+        );
+    }
+
+    return (
+        <motion.div
+            className="relative w-full max-w-2xl px-6 pb-3 text-center pt-7 sm:px-10 md:px-6 md:pt-8 md:pb-4"
+            variants={stepEnter}
+        >
+            {inner}
         </motion.div>
     );
 }
@@ -329,19 +417,30 @@ function Connector({
     ringTo: string;
     reduced: boolean;
 }) {
+    if (reduced) {
+        return (
+            <div className="my-8 md:my-10 w-[2px] h-16 md:h-[4.25rem] rounded-full overflow-hidden opacity-95">
+                <div
+                    className="w-full h-full"
+                    style={{
+                        backgroundImage: `linear-gradient(180deg, ${ringFrom} 0%, ${ringTo} 50%, ${ringFrom} 100%)`,
+                        boxShadow: "0 0 14px rgba(230,31,116,0.38)",
+                    }}
+                />
+            </div>
+        );
+    }
+
     return (
         <motion.div
-            className="my-[2.1rem] md:my-[2.5rem] w-[2px] h-16 md:h-[4.25rem] rounded-full overflow-hidden opacity-95"
+            className="my-8 md:my-10 w-[2px] h-16 md:h-[4.25rem] rounded-full overflow-hidden opacity-95"
             variants={connectorEnter}
             style={{ transformOrigin: "top" }}
         >
             <div
-                className={`h-full w-full ${reduced ? "" : "yma-flow"}`}
+                className="w-full h-full yma-flow"
                 style={{
-                    backgroundImage: `linear-gradient(180deg,
-                        ${ringFrom} 0%,
-                        ${ringTo} 50%,
-                        ${ringFrom} 100%)`,
+                    backgroundImage: `linear-gradient(180deg, ${ringFrom} 0%, ${ringTo} 50%, ${ringFrom} 100%)`,
                     boxShadow: "0 0 14px rgba(230,31,116,0.38)",
                 }}
             />
