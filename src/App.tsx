@@ -6,7 +6,7 @@ import HomePage from "./Pages/HomePage/HomePage";
 import LegalPage from "./Pages/LegalPage/LegalPage";
 import AdminPage from "./Pages/AdminPage/AdminPage";
 import CookieBanner from "./components/Cookies/CookieBanner";
-import SocialFloatingBar from"./components/ui/SocialFloatingBar";
+import SocialFloatingBar from "./components/ui/SocialFloatingBar";
 import "./App.css";
 import AboutSitePage from "./Pages/AboutSitePage/AboutSitePage";
 import AdminLoginPage from "./Pages/AdminPage/AdminLoginPage";
@@ -31,17 +31,19 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/legal" element={<LegalPage />} />
-            <Route path="/admin" element={<AdminPage />} />
             <Route path="/about-site/:id" element={<AboutSitePage />} />
+
             <Route path="/admin/login" element={<AdminLoginPage />} />
+
             <Route
-              path="/admin"
+              path="/admin/*"
               element={
                 <AdminProtectedRoute>
                   <AdminPage />
                 </AdminProtectedRoute>
               }
             />
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
