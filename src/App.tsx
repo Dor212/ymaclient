@@ -11,9 +11,11 @@ import "./App.css";
 import AboutSitePage from "./Pages/AboutSitePage/AboutSitePage";
 import AdminLoginPage from "./Pages/AdminPage/AdminLoginPage";
 import AdminProtectedRoute from "./routes/AdminProtectedRoute";
+import { AuthProvider } from "./auth/AuthProvider";
 
 function App() {
   return (
+    <AuthProvider>
     <HelmetProvider>
       <div className="relative min-h-screen text-white">
         <div className="fixed inset-0 -z-10 bg-[url('/background4.png')] bg-center bg-cover bg-fixed" />
@@ -52,6 +54,7 @@ function App() {
         <CookieBanner />
       </div>
     </HelmetProvider>
+    </AuthProvider>
   );
 }
 

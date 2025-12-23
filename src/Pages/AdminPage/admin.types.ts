@@ -15,9 +15,9 @@ export type RefClientForm = {
 export type ProjectForm = {
   clientName: string;
   projectType: string;
-  description: string;       // קצר (לכרטיסים)
-  longDescription: string;   // ארוך (לעמוד "על האתר")
-  url: string;               // קישור לעמוד "על האתר"
+  description: string;       
+  longDescription: string;   
+  url: string;             
   images: string[];
   active: boolean;
 };

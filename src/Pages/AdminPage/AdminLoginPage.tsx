@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
-import { api } from "../../api/axios";
-import { setAccessToken } from "../../api/authToken";
+import { authClient } from "../../api/authClient";
+import { useAuth } from "../../auth/AuthProvider";
 
 type LocationState = {
     from?: {
@@ -10,10 +10,20 @@ type LocationState = {
     };
 };
 
+type LoginRes = {
+    accessToken?: string;
+};
+
+type LoginErr = {
+    error?: string;
+};
+
 export default function AdminLoginPage() {
     const nav = useNavigate();
     const location = useLocation();
     const state = (location.state ?? null) as LocationState | null;
+
+    const { setAuthed } = useAuth();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -28,21 +38,21 @@ export default function AdminLoginPage() {
         setErr(null);
 
         try {
-            const r = await api.post("/admin/auth/login", { email, password });
-            const token: string | undefined = r?.data?.accessToken;
+            const r = await authClient.post<LoginRes>("/admin/auth/login", { email, password });
+            const token = r.data?.accessToken;
 
             if (!token) {
                 setErr("לא התקבל טוקן מהשרת");
                 return;
             }
 
-            setAccessToken(token);
+            setAuthed(token);
 
             const to = state?.from?.pathname || "/admin";
             nav(to, { replace: true });
-        } catch (e: unknown) {
-            const error = e as AxiosError<{ error?: string }>;
-            setErr(error?.response?.data?.error || "Login failed");
+        } catch (e) {
+            const error = e as AxiosError<LoginErr>;
+            setErr(error.response?.data?.error || "Login failed");
         } finally {
             setBusy(false);
         }

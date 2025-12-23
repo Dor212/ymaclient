@@ -1,41 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { api } from "../api/axios";
-import { getAccessToken, setAccessToken } from "../api/authToken";
+import { useAuth } from "../auth/AuthProvider";
 
-export default function AdminProtectedRoute({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    const [loading, setLoading] = useState(true);
-    const [ok, setOk] = useState(false);
+export default function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+    const { status } = useAuth();
 
-    useEffect(() => {
-        const run = async () => {
-            const token = getAccessToken();
-            if (token) {
-                setOk(true);
-                setLoading(false);
-                return;
-            }
+    if (status === "loading") {
+        return <div className="p-6 text-white">טוען…</div>;
+    }
 
-            try {
-                const r = await api.post("/admin/auth/refresh");
-                setAccessToken(r.data.accessToken);
-                setOk(true);
-            } catch {
-                setAccessToken("");
-                setOk(false);
-            } finally {
-                setLoading(false);
-            }
-        };
+    if (status === "guest") {
+        return <Navigate to="/admin/login" replace />;
+    }
 
-        run();
-    }, []);
-
-    if (loading) return null;
-    if (!ok) return <Navigate to="/admin/login" replace />;
     return <>{children}</>;
 }
