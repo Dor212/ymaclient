@@ -239,8 +239,17 @@ export default function PortfolioSection({ id = "portfolio", blocks, className =
                             <MiniCarousel items={b.items} />
 
                             <div className="flex flex-col items-center gap-1">
-                                <h3 className="mt-1 text-lg font-semibold text-white">{b.clientName}</h3>
-                                <p className="text-xs font-medium text-white/70">{b.projectType}</p>
+                                <h3 className="mt-1 text-lg font-semibold">
+                                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF2E7E] via-[#8B5CF6] to-[#FF7745] drop-shadow-[0_0_10px_rgba(255,46,126,0.22)]">
+                                        {b.clientName}
+                                    </span>
+                                </h3>
+
+                                <p className="text-xs font-medium">
+                                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#3A86FF] to-[#00C9A7] opacity-95">
+                                        {b.projectType}
+                                    </span>
+                                </p>
                             </div>
 
                             <div className="flex flex-col items-center gap-4">

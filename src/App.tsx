@@ -17,9 +17,8 @@ function App() {
   return (
     <AuthProvider>
       <HelmetProvider>
-        <div className="relative min-h-screen text-white">
-          <div className="fixed inset-0 -z-10 bg-center bg-cover bg-no-repeat bg-fixed bg-[url('/BgYMAm.png')] md:bg-[url('/BgYMA.png')]" />
-
+        <div className="relative min-h-[100svh] text-white">
+          <div className="fixed inset-0 -z-10 bg-center bg-cover bg-no-repeat bg-[url('/BgYMAm.png')] md:bg-[url('/BgYMA.png')] bg-scroll md:bg-fixed" />
           <div className="fixed inset-0 -z-10 bg-black/35" />
 
           <a
