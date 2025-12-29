@@ -16,44 +16,49 @@ import { AuthProvider } from "./auth/AuthProvider";
 function App() {
   return (
     <AuthProvider>
-    <HelmetProvider>
-      <div className="relative min-h-screen text-white">
-        <div className="fixed inset-0 -z-10 bg-[url('/background4.png')] bg-center bg-cover bg-fixed" />
+      <HelmetProvider>
+        <div className="relative min-h-screen text-white">
+          <div className="fixed inset-0 -z-10 bg-center bg-cover bg-no-repeat bg-fixed bg-[url('/BgYMAm.png')] md:bg-[url('/BgYMA.png')]" />
 
-        <a
-          href="#main"
-          className="rounded sr-only focus:not-sr-only focus:absolute focus:top-2 focus:right-2 focus:bg-black/70 focus:text-white focus:px-3 focus:py-2"
-        />
+          <div className="fixed inset-0 -z-10 bg-black/35" />
 
-        <Header />
-        <SocialFloatingBar />
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:right-2 focus:z-50 focus:rounded focus:bg-black/80 focus:text-white focus:px-3 focus:py-2"
+          >
+            דלג לתוכן
+          </a>
 
-        <main id="main" className="pt-20">
-          <CookieBanner />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/home" element={<Navigate to="/" replace />} />
-            <Route path="/legal" element={<LegalPage />} />
-            <Route path="/about-site/:id" element={<AboutSitePage />} />
+          <Header />
+          <SocialFloatingBar />
 
-            <Route path="/admin/login" element={<AdminLoginPage />} />
+          <main id="main" className="pt-20">
+            <CookieBanner />
 
-            <Route
-              path="/admin/*"
-              element={
-                <AdminProtectedRoute>
-                  <AdminPage />
-                </AdminProtectedRoute>
-              }
-            />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/home" element={<Navigate to="/" replace />} />
+              <Route path="/legal" element={<LegalPage />} />
+              <Route path="/about-site/:id" element={<AboutSitePage />} />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
 
-        <Footer />
-      </div>
-    </HelmetProvider>
+              <Route
+                path="/admin/*"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminPage />
+                  </AdminProtectedRoute>
+                }
+              />
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+
+          <Footer />
+        </div>
+      </HelmetProvider>
     </AuthProvider>
   );
 }

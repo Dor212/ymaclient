@@ -10,32 +10,25 @@ const HomePage = () => {
     return (
         <>
             <PageSEO path="/" />
-            <main id="main">
-                <h1 className="sr-only">Y.M.A – אתרים מותאמים אישית בקוד מלא</h1>
+            <h1 className="sr-only">Y.M.A – אתרים מותאמים אישית בקוד מלא</h1>
 
-                <div
-                    className="w-full min-h-screen bg-fixed bg-center bg-no-repeat bg-cover"
-                    style={{ backgroundImage: "url('/background4.png')" }}
-                >
-                    <div aria-hidden className="h-24 md:h-28" />
+            <div aria-hidden className="h-10 md:h-14" />
 
-                    <div className="px-5 mx-auto text-center max-w-7xl sm:px-6">
-                        <section className="grid place-items-center">
-                            <LogoHero />
-                        </section>
+            <div className="px-5 mx-auto text-center max-w-7xl sm:px-6">
+                <section className="grid place-items-center">
+                    <LogoHero />
+                </section>
 
-                        <div className="mt-10 md:mt-14 flex flex-col gap-[4rem] md:gap-[5.5rem]">
-                            <AboutSection id="about" className="w-full" />
-                            <PortfolioSection id="portfolio" />
-                            <ProcessSectionA id="process" />
-                            <PackagesSection id="packages" />
-                            <AskClientsSection id="ask-clients" />
-                        </div>
-                    </div>
-
-                    <div aria-hidden className="pb-28" />
+                <div className="mt-10 md:mt-14 flex flex-col gap-[4rem] md:gap-[5.5rem]">
+                    <AboutSection id="about" className="w-full" />
+                    <PortfolioSection id="portfolio" />
+                    <ProcessSectionA id="process" />
+                    <PackagesSection id="packages" />
+                    <AskClientsSection id="ask-clients" />
                 </div>
-            </main>
+
+                <div aria-hidden className="h-20 md:h-28" />
+            </div>
         </>
     );
 };
