@@ -82,6 +82,16 @@ export default function AdminPage() {
         }
     };
 
+    const reorderProjectImages = async (projectId: string, images: string[]) => {
+        const res = await api.patch<ProjectItem>(`/projects/${projectId}/images`, {
+            images,
+        });
+        setProjects((prev) =>
+            prev.map((p) => (p._id === projectId ? res.data : p))
+        );
+        return res.data;
+    };
+
     return (
         <main id="main">
             <div
@@ -105,6 +115,7 @@ export default function AdminPage() {
                             items={projects}
                             onCreate={createProject}
                             onDelete={deleteProject}
+                            onReorderImages={reorderProjectImages}
                             busyDeleteId={busyDeleteId}
                         />
                     </div>

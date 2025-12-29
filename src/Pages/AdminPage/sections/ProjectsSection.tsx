@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
@@ -22,6 +22,14 @@ function fileToDataUrl(file: File) {
     });
 }
 
+function reorder<T>(arr: T[], from: number, to: number) {
+    if (from === to) return arr;
+    const copy = [...arr];
+    const [picked] = copy.splice(from, 1);
+    copy.splice(to, 0, picked);
+    return copy;
+}
+
 type Props = {
     items: ProjectItem[];
     onCreate: (payload: {
@@ -34,10 +42,17 @@ type Props = {
         isActive: boolean;
     }) => Promise<void>;
     onDelete: (id: string) => Promise<void>;
+    onReorderImages: (projectId: string, images: string[]) => Promise<ProjectItem>;
     busyDeleteId: string | null;
 };
 
-export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteId }: Props) {
+export default function ProjectsSection({
+    items,
+    onCreate,
+    onDelete,
+    onReorderImages,
+    busyDeleteId,
+}: Props) {
     const [form, setForm] = useState<ProjectForm>({
         clientName: "",
         projectType: "",
@@ -49,6 +64,23 @@ export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteI
     });
 
     const [busyUploading, setBusyUploading] = useState(false);
+    const [busySaveId, setBusySaveId] = useState<string | null>(null);
+
+    const [editImages, setEditImages] = useState<Record<string, string[]>>({});
+    const [dirty, setDirty] = useState<Record<string, boolean>>({});
+
+    const dragFromRef = useRef<number | null>(null);
+    const dragKeyRef = useRef<string>("");
+
+    useEffect(() => {
+        setEditImages((prev) => {
+            const next = { ...prev };
+            for (const p of items) {
+                if (!next[p._id]) next[p._id] = Array.isArray(p.images) ? p.images : [];
+            }
+            return next;
+        });
+    }, [items]);
 
     const accentGradient = useMemo(
         () => "linear-gradient(135deg, rgba(58,134,255,0.32), rgba(0,201,167,0.32))",
@@ -87,6 +119,58 @@ export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteI
 
     const clearAllImages = () => {
         setForm((prev) => ({ ...prev, images: [] }));
+    };
+
+    const onFormDragStart = (from: number) => {
+        dragFromRef.current = from;
+        dragKeyRef.current = "FORM";
+    };
+
+    const onFormDrop = (to: number) => {
+        if (dragKeyRef.current !== "FORM") return;
+        const from = dragFromRef.current;
+        dragFromRef.current = null;
+        dragKeyRef.current = "";
+        if (from === null) return;
+        setForm((prev) => ({ ...prev, images: reorder(prev.images, from, to) }));
+    };
+
+    const onProjectDragStart = (projectId: string, from: number) => {
+        dragFromRef.current = from;
+        dragKeyRef.current = projectId;
+    };
+
+    const onProjectDrop = (projectId: string, to: number) => {
+        if (dragKeyRef.current !== projectId) return;
+        const from = dragFromRef.current;
+        dragFromRef.current = null;
+        dragKeyRef.current = "";
+        if (from === null) return;
+
+        setEditImages((prev) => {
+            const current = prev[projectId] || [];
+            const next = reorder(current, from, to);
+            return { ...prev, [projectId]: next };
+        });
+
+        setDirty((prev) => ({ ...prev, [projectId]: true }));
+    };
+
+    const resetProjectImages = (projectId: string) => {
+        const original = items.find((x) => x._id === projectId)?.images || [];
+        setEditImages((prev) => ({ ...prev, [projectId]: original }));
+        setDirty((prev) => ({ ...prev, [projectId]: false }));
+    };
+
+    const saveProjectImages = async (projectId: string) => {
+        const images = editImages[projectId] || [];
+        try {
+            setBusySaveId(projectId);
+            await onReorderImages(projectId, images);
+            setDirty((prev) => ({ ...prev, [projectId]: false }));
+        } finally {
+            setBusySaveId(null);
+        }
     };
 
     const submit = async (e: FormEvent) => {
@@ -201,7 +285,9 @@ export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteI
 
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between gap-3">
-                            <label className="font-[Heebo] text-xs font-medium text-white/90">תמונות לפרויקט</label>
+                            <label className="font-[Heebo] text-xs font-medium text-white/90">
+                                תמונות לפרויקט (אפשר לגרור לסדר)
+                            </label>
                             {form.images.length ? (
                                 <button
                                     type="button"
@@ -232,9 +318,16 @@ export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteI
                                     {form.images.map((src, i) => (
                                         <div
                                             key={`${src.slice(0, 24)}-${i}`}
-                                            className="relative overflow-hidden border rounded-xl border-white/15 bg-black/30"
+                                            draggable
+                                            onDragStart={() => onFormDragStart(i)}
+                                            onDragOver={(e) => e.preventDefault()}
+                                            onDrop={() => onFormDrop(i)}
+                                            className="relative overflow-hidden border rounded-xl border-white/15 bg-black/30 cursor-grab active:cursor-grabbing"
                                         >
                                             <img src={src} alt={`preview-${i + 1}`} className="object-cover w-full h-20" />
+                                            <div className="absolute bottom-1 right-1 rounded-lg bg-black/65 border border-white/15 px-2 py-1 text-[10px] font-[Heebo] text-white/90">
+                                                {i + 1}
+                                            </div>
                                             <button
                                                 type="button"
                                                 onClick={() => removeImage(i)}
@@ -269,7 +362,6 @@ export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteI
                         </div>
                     </div>
 
-                    {/* כפתור באמצע + בלי הפסקה */}
                     <div className="flex justify-center pt-3">
                         <button
                             type="submit"
@@ -290,45 +382,101 @@ export default function ProjectsSection({ items, onCreate, onDelete, busyDeleteI
                     <p className="font-[Heebo] text-xs text-white/60 mb-2">פרויקטים קיימים במערכת:</p>
 
                     <div className="flex flex-col gap-2">
-                        {items.map((p) => (
-                            <div
-                                key={p._id}
-                                className="relative flex items-center justify-between rounded-2xl bg-white/5 border border-white/10 px-3 py-2.5"
-                            >
-                                <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-[Heebo] text-[13px] text-white truncate">{p.clientName}</span>
-                                    <span className="font-[Heebo] text-[11px] text-white/60 truncate">{p.projectType}</span>
-                                    {p.url ? (
-                                        <a
-                                            href={p.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="font-[Heebo] text-[11px] text-cyan-200/80 hover:text-cyan-100 truncate"
-                                        >
-                                            {p.url}
-                                        </a>
-                                    ) : null}
-                                </div>
+                        {items.map((p) => {
+                            const imgs = editImages[p._id] || p.images || [];
+                            const isDirty = !!dirty[p._id];
 
-                                <div className="flex items-center gap-2">
-                                    <span
-                                        className={`inline-flex items-center rounded-xl px-2 py-[2px] text-[11px] font-[Heebo] ${p.isActive ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-white/70"
-                                            }`}
-                                    >
-                                        {p.isActive ? "מופיע באתר" : "לא מופיע"}
-                                    </span>
+                            return (
+                                <div
+                                    key={p._id}
+                                    className="relative rounded-2xl bg-white/5 border border-white/10 px-3 py-3"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex flex-col gap-0.5 min-w-0">
+                                            <span className="font-[Heebo] text-[13px] text-white truncate">{p.clientName}</span>
+                                            <span className="font-[Heebo] text-[11px] text-white/60 truncate">{p.projectType}</span>
+                                            {p.url ? (
+                                                <a
+                                                    href={p.url}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="font-[Heebo] text-[11px] text-cyan-200/80 hover:text-cyan-100 truncate"
+                                                >
+                                                    {p.url}
+                                                </a>
+                                            ) : null}
+                                        </div>
 
-                                    <button
-                                        type="button"
-                                        disabled={busyDeleteId === p._id}
-                                        onClick={() => onDelete(p._id)}
-                                        className="inline-flex items-center rounded-xl px-2 py-[2px] bg-red-500/15 border border-red-400/25 text-red-200 hover:bg-red-500/25 text-[11px] font-[Heebo] disabled:opacity-60"
-                                    >
-                                        מחיקה
-                                    </button>
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={`inline-flex items-center rounded-xl px-2 py-[2px] text-[11px] font-[Heebo] ${p.isActive ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-white/70"
+                                                    }`}
+                                            >
+                                                {p.isActive ? "מופיע באתר" : "לא מופיע"}
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                disabled={busyDeleteId === p._id}
+                                                onClick={() => onDelete(p._id)}
+                                                className="inline-flex items-center rounded-xl px-2 py-[2px] bg-red-500/15 border border-red-400/25 text-red-200 hover:bg-red-500/25 text-[11px] font-[Heebo] disabled:opacity-60"
+                                            >
+                                                מחיקה
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <div className="flex items-center justify-between gap-3 mb-2">
+                                            <span className="font-[Heebo] text-[11px] text-white/60">תמונות (גרור לסדר)</span>
+
+                                            <div className="flex items-center gap-2">
+                                                {imgs.length ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => resetProjectImages(p._id)}
+                                                        className="text-[11px] font-[Heebo] text-white/65 hover:text-white/85"
+                                                    >
+                                                        איפוס
+                                                    </button>
+                                                ) : null}
+
+                                                <button
+                                                    type="button"
+                                                    disabled={!isDirty || busySaveId === p._id}
+                                                    onClick={() => saveProjectImages(p._id)}
+                                                    className="text-[11px] font-[Heebo] px-3 py-1 rounded-xl border border-white/15 bg-white/10 text-white/85 hover:bg-white/15 disabled:opacity-50 disabled:hover:bg-white/10"
+                                                >
+                                                    {busySaveId === p._id ? "שומר…" : "שמור סדר"}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {imgs.length ? (
+                                            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                                                {imgs.map((src, i) => (
+                                                    <div
+                                                        key={`${src.slice(0, 24)}-${i}`}
+                                                        draggable
+                                                        onDragStart={() => onProjectDragStart(p._id, i)}
+                                                        onDragOver={(e) => e.preventDefault()}
+                                                        onDrop={() => onProjectDrop(p._id, i)}
+                                                        className="relative overflow-hidden border rounded-xl border-white/15 bg-black/30 cursor-grab active:cursor-grabbing"
+                                                    >
+                                                        <img src={src} alt={`p-${p._id}-img-${i + 1}`} className="object-cover w-full h-16" />
+                                                        <div className="absolute bottom-1 right-1 rounded-lg bg-black/65 border border-white/15 px-2 py-1 text-[10px] font-[Heebo] text-white/90">
+                                                            {i + 1}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] font-[Heebo] text-white/45">אין תמונות לפרויקט הזה</div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>

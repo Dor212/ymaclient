@@ -29,6 +29,7 @@ function App() {
         <SocialFloatingBar />
 
         <main id="main" className="pt-20">
+          <CookieBanner />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
@@ -51,7 +52,6 @@ function App() {
         </main>
 
         <Footer />
-        <CookieBanner />
       </div>
     </HelmetProvider>
     </AuthProvider>

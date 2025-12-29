@@ -15,9 +15,9 @@ export type RefClientForm = {
 export type ProjectForm = {
   clientName: string;
   projectType: string;
-  description: string;       
-  longDescription: string;   
-  url: string;             
+  description: string;
+  longDescription: string;
+  url: string;
   images: string[];
   active: boolean;
 };
@@ -32,7 +32,9 @@ export type RefClientItem = {
   note?: string;
   projectType: ProjectType;
   isActive: boolean;
+  maxLeadsPerWeek?: number;
   createdAt?: string;
+  updatedAt?: string;
 };
 
 export type ProjectItem = {
@@ -40,9 +42,12 @@ export type ProjectItem = {
   clientName: string;
   projectType: string;
   description: string;
-  longDescription?: string;
-  url?: string;
+  longDescription: string;
+  url: string;
+  liveUrl: string;
   images: string[];
+  order: number;
   isActive: boolean;
   createdAt?: string;
+  updatedAt?: string;
 };
