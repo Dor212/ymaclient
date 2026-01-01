@@ -237,7 +237,7 @@ export default function AboutSitePage() {
         <div dir="rtl">
             <div
                 className="w-full min-h-screen bg-fixed bg-center bg-no-repeat bg-cover"
-                style={{ backgroundImage: "url('/background4.png')" }}
+                
             >
                 <div aria-hidden className="h-24 md:h-28" />
 
