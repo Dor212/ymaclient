@@ -96,7 +96,6 @@ export default function AdminPage() {
         <main id="main">
             <div
                 className="w-full min-h-screen bg-fixed bg-center bg-no-repeat bg-cover"
-                style={{ backgroundImage: "url('/background4.png')" }}
             >
                 <div aria-hidden className="h-24 md:h-28" />
 
