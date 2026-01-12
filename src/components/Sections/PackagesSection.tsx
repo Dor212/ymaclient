@@ -1,10 +1,4 @@
-import {
-    useState,
-    useRef,
-    useLayoutEffect,
-    type TouchEvent,
-    type ReactNode,
-} from "react";
+import { useState, type TouchEvent, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
@@ -114,62 +108,6 @@ function clamp(lines: number) {
     };
 }
 
-function FitToViewport({
-    children,
-    extraSpace = 14,
-}: {
-    children: ReactNode;
-    extraSpace?: number;
-}) {
-    const contentRef = useRef<HTMLDivElement | null>(null);
-    const [height, setHeight] = useState<number | null>(null);
-
-    useLayoutEffect(() => {
-        const el = contentRef.current;
-        if (!el) return;
-
-        let raf = 0;
-        let ro: ResizeObserver | null = null;
-
-        const measure = () => setHeight(el.scrollHeight + extraSpace);
-
-        const schedule = () => {
-            cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(measure);
-        };
-
-        schedule();
-
-        const t1 = window.setTimeout(schedule, 120);
-        const t2 = window.setTimeout(schedule, 420);
-
-        if (typeof ResizeObserver !== "undefined") {
-            ro = new ResizeObserver(() => schedule());
-            ro.observe(el);
-        }
-
-        window.addEventListener("resize", schedule);
-        window.addEventListener("orientationchange", schedule);
-
-        return () => {
-            cancelAnimationFrame(raf);
-            window.clearTimeout(t1);
-            window.clearTimeout(t2);
-            ro?.disconnect();
-            window.removeEventListener("resize", schedule);
-            window.removeEventListener("orientationchange", schedule);
-        };
-    }, [extraSpace]);
-
-    return (
-        <div className="flex justify-center w-full" style={{ height: height ?? "auto" }}>
-            <div ref={contentRef} className="w-full">
-                {children}
-            </div>
-        </div>
-    );
-}
-
 export default function PackagesSection({ id, className }: PackagesSectionProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -195,18 +133,21 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
         setTouchStartX(null);
     };
 
+    const activePkg = PACKAGES[activeIndex];
+
     return (
         <section
             id={id}
             className={`relative z-10 w-full pt-16 pb-24 md:pt-24 md:pb-32 px-4 md:px-8 lg:px-12 ${className ?? ""}`}
             dir="rtl"
+            style={{ overflowAnchor: "none" }}
         >
             <div className="max-w-6xl mx-auto">
                 <motion.div
                     variants={fadeUp}
                     initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true, amount: 0.35 }}
+                    animate="show"
+                    custom={0}
                     className="text-center"
                 >
                     <h2 className="mb-3 text-3xl font-extrabold leading-tight md:text-4xl">
@@ -231,46 +172,37 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                     <motion.div
                         variants={fadeUp}
                         initial="hidden"
-                        whileInView="show"
-                        viewport={{ once: true, amount: 0.35 }}
+                        animate="show"
+                        custom={1}
                         className="flex justify-center"
                     >
-                        <div
+                        <motion.div
+                            layout
                             className="relative w-full max-w-[430px]"
                             onTouchStart={handleTouchStart}
                             onTouchEnd={handleTouchEnd}
+                            style={{ overflowAnchor: "none" }}
                         >
-                            <FitToViewport key={activeIndex} extraSpace={14}>
-                                <PackageCard pkg={PACKAGES[activeIndex]} compact />
-                            </FitToViewport>
-
-                            <button
-                                type="button"
-                                onClick={handlePrev}
-                                aria-label="החבילה הקודמת"
-                                className="absolute left-0 flex items-center justify-center w-10 h-10 -translate-x-2 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/35 text-white/90 backdrop-blur-md active:scale-95"
-                                style={{ boxShadow: "0 0 18px rgba(58,134,255,0.25)" }}
-                            >
-                                <span className="text-lg leading-none">›</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={handleNext}
-                                aria-label="החבילה הבאה"
-                                className="absolute right-0 flex items-center justify-center w-10 h-10 translate-x-2 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/35 text-white/90 backdrop-blur-md active:scale-95"
-                                style={{ boxShadow: "0 0 18px rgba(0,201,167,0.22)" }}
-                            >
-                                <span className="text-lg leading-none">‹</span>
-                            </button>
-                        </div>
+                            <AnimatePresence mode="wait" initial={false}>
+                                <motion.div
+                                    key={activePkg.id}
+                                    layout
+                                    initial={{ opacity: 0, x: 16 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -16 }}
+                                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                                >
+                                    <PackageCard pkg={activePkg} compact />
+                                </motion.div>
+                            </AnimatePresence>
+                        </motion.div>
                     </motion.div>
 
                     <motion.div
                         variants={fadeUp}
                         initial="hidden"
-                        whileInView="show"
-                        viewport={{ once: true, amount: 0.35 }}
+                        animate="show"
+                        custom={2}
                         className="flex items-center justify-center"
                         style={{ marginTop: "1.05rem", marginBottom: "1.8rem" }}
                     >
@@ -282,8 +214,8 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                                     onClick={() => setActiveIndex(index)}
                                     aria-label={`מעבר לחבילה ${index + 1}`}
                                     className={`h-2.5 rounded-full transition-all ${index === activeIndex
-                                        ? "w-7 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_16px_rgba(255,46,126,0.7)]"
-                                        : "w-2.5 bg-white/20"
+                                            ? "w-7 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_16px_rgba(255,46,126,0.7)]"
+                                            : "w-2.5 bg-white/20"
                                         }`}
                                 />
                             ))}
@@ -297,8 +229,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                             key={pkg.id}
                             variants={fadeUp}
                             initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true, amount: 0.35 }}
+                            animate="show"
                             custom={index}
                             className="flex"
                         >
@@ -330,7 +261,10 @@ function PackageCard({ pkg, compact }: PackageCardProps) {
         >
             <div className={compact ? "p-4" : "p-5 sm:p-6"}>
                 <div className="text-center">
-                    <h3 className={`${compact ? "text-[18px]" : "text-[18px] sm:text-[20px]"} font-extrabold text-white leading-tight`}>
+                    <h3
+                        className={`${compact ? "text-[18px]" : "text-[18px] sm:text-[20px]"
+                            } font-extrabold text-white leading-tight`}
+                    >
                         {pkg.name}
                     </h3>
 
@@ -341,7 +275,8 @@ function PackageCard({ pkg, compact }: PackageCardProps) {
                     </div>
 
                     <p
-                        className={`${compact ? "mt-2 text-[13px]" : "mt-3 text-[13px] sm:text-[14px]"} leading-relaxed text-white/78 mx-auto max-w-[26rem]`}
+                        className={`${compact ? "mt-2 text-[13px]" : "mt-3 text-[13px] sm:text-[14px]"
+                            } leading-relaxed text-white/78 mx-auto max-w-[26rem]`}
                         style={compact ? clamp(2) : undefined}
                     >
                         {pkg.subtitle}
@@ -351,7 +286,8 @@ function PackageCard({ pkg, compact }: PackageCardProps) {
                 <div className={compact ? "mt-4 grid gap-3" : "mt-5 grid gap-4"}>
                     <InfoBlock title="למי זה מתאים?" compact={compact}>
                         <p
-                            className={`${compact ? "text-[13px]" : "text-[13.5px] sm:text-[14px]"} leading-relaxed text-white/82 text-center`}
+                            className={`${compact ? "text-[13px]" : "text-[13.5px] sm:text-[14px]"
+                                } leading-relaxed text-white/82 text-center`}
                             style={compact ? clamp(3) : undefined}
                         >
                             {pkg.suits}
@@ -388,7 +324,12 @@ function PackageCard({ pkg, compact }: PackageCardProps) {
                         </InfoBlock>
                     )}
 
-                    <NotesStack time={pkg.time} noteTitle={pkg.noteTitle} note={pkg.note} compact={compact} />
+                    <NotesStack
+                        time={pkg.time}
+                        noteTitle={pkg.noteTitle}
+                        note={pkg.note}
+                        compact={compact}
+                    />
                 </div>
             </div>
 
@@ -439,7 +380,10 @@ function InfoBlock({
     compact?: boolean;
 }) {
     return (
-        <div className={`rounded-2xl border border-white/10 bg-black/25 backdrop-blur-md ${compact ? "p-3" : "p-4"}`}>
+        <div
+            className={`rounded-2xl border border-white/10 bg-black/25 backdrop-blur-md ${compact ? "p-3" : "p-4"
+                }`}
+        >
             <SectionHeader title={title} compact={compact} />
             <div className="mt-3">{children}</div>
         </div>
@@ -462,7 +406,10 @@ function AccordionBlock({
     compact?: boolean;
 }) {
     return (
-        <div className={`rounded-2xl border border-white/10 bg-black/25 backdrop-blur-md ${compact ? "p-3" : "p-4"}`}>
+        <div
+            className={`rounded-2xl border border-white/10 bg-black/25 backdrop-blur-md ${compact ? "p-3" : "p-4"
+                }`}
+        >
             <SectionHeader title={title} compact={compact} />
 
             <button
@@ -512,7 +459,10 @@ function NotesStack({
     compact?: boolean;
 }) {
     return (
-        <div className={`rounded-2xl border border-white/10 bg-black/20 backdrop-blur-md ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}>
+        <div
+            className={`rounded-2xl border border-white/10 bg-black/20 backdrop-blur-md ${compact ? "px-3 py-3" : "px-4 py-3.5"
+                }`}
+        >
             <SectionHeader title="הערות" compact={compact} />
 
             <p
