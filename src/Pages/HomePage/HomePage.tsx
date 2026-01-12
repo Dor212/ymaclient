@@ -14,10 +14,8 @@ const HomePage = () => {
 
             <div aria-hidden className="h-10 md:h-14" />
 
-            <div className="px-5 mx-auto text-center max-w-7xl sm:px-6">
-                <section className="grid place-items-center">
-                    <LogoHero />
-                </section>
+            <main className="px-5 mx-auto text-center max-w-7xl sm:px-6">
+                <LogoHero />
 
                 <div className="mt-10 md:mt-14 flex flex-col gap-[4rem] md:gap-[5.5rem]">
                     <AboutSection id="about" className="w-full" />
@@ -28,7 +26,7 @@ const HomePage = () => {
                 </div>
 
                 <div aria-hidden className="h-20 md:h-28" />
-            </div>
+            </main>
         </>
     );
 };

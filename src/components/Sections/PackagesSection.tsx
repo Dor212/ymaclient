@@ -5,7 +5,7 @@ import {
     type TouchEvent,
     type ReactNode,
 } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
 
@@ -26,6 +26,8 @@ type Package = {
     note: string;
     from?: boolean;
 };
+
+const WA_PHONE = "972000000000";
 
 const fadeUp: Variants = {
     hidden: { opacity: 0, y: 24 },
@@ -50,14 +52,14 @@ const PACKAGES: Package[] = [
             "לעסקים ויזמים שרוצים עמוד אחד מרוכז להצגת שירות, מוצר או קמפיין, בלי להסתבך עם אתר גדול.",
         features: [
             "Hero ראשי מעוצב ברמה גבוהה",
-            "תוכן שיווקי ממוקד ו-CTA ברור",
+            "תוכן שיווקי ממוקד ו CTA ברור",
             "טופס לידים או כפתור WhatsApp בולט",
             "התאמה מלאה למובייל ולמחשב (Responsive)",
             "חיבור לדומיין שלכם + אבטחת SSL",
         ],
-        time: "כ־7 ימי עבודה.",
+        time: "כ 7 ימי עבודה.",
         noteTitle: "חשוב לדעת",
-        note: "המחיר אינו כולל רכישת דומיין ואחסון, אך נלווה אתכם בבחירת הספק וההגדרות, כדי שהכול יהיה פשוט, ברור ושקוף.",
+        note: "המחיר אינו כולל רכישת דומיין ואחסון. נלווה אתכם בבחירת הספק וההגדרות כדי שהכול יהיה פשוט, ברור ושקוף.",
     },
     {
         id: "business",
@@ -65,7 +67,7 @@ const PACKAGES: Package[] = [
         price: "₪1,800",
         subtitle: "נוכחות דיגיטלית מלאה שמציגה את העסק בצורה מקצועית.",
         suits:
-            "לעסקים, יועצים, נותני שירות וחברות קטנות–בינוניות שרוצים אתר שמסביר מי הם, מה הם עושים ולמה לבחור דווקא בהם.",
+            "לעסקים, יועצים, נותני שירות וחברות קטנות בינוניות שרוצים אתר שמסביר מי הם, מה הם עושים ולמה לבחור דווקא בהם.",
         features: [
             "אתר תדמית מלא הכולל 3–6 עמודים (הכמות משתנה לפי אופי העסק והפרויקט)",
             "עיצוב מודרני ומותאם אישית שמשדר אמינות ומקצועיות",
@@ -75,9 +77,9 @@ const PACKAGES: Package[] = [
             "SEO בסיסי: Meta Tags, Sitemap, Robots להגברת הנראות בגוגל",
             "חיבור לדומיין שלכם + אבטחת SSL",
         ],
-        time: "כ־2–3 שבועות – תלוי גם בקצב שיתוף הפעולה והעברת החומרים מצדכם.",
+        time: "כ 2–3 שבועות, תלוי גם בקצב שיתוף הפעולה והעברת החומרים מצדכם.",
         noteTitle: "כולל תחזוקה",
-        note: "חודש תחזוקה מלא מתנה. לאחר מכן ניתן להצטרף לתחזוקה שוטפת – ₪180 לחודש (אחסון, גיבויים, עדכוני אבטחה ותמיכה טכנית).",
+        note: "חודש תחזוקה מלא מתנה. לאחר מכן ניתן להצטרף לתחזוקה שוטפת, ₪180 לחודש (אחסון, גיבויים, עדכוני אבטחה ותמיכה טכנית).",
         from: true,
     },
     {
@@ -86,7 +88,7 @@ const PACKAGES: Package[] = [
         price: "₪5,000",
         subtitle: "גם תדמית מקצועית, גם חנות פעילה או ניהול עצמי של התוכן.",
         suits:
-            "לעסקים שרוצים גם להציג את העסק בצורה מקצועית וגם לנהל לבד תכנים, מוצרים והזמנות – או להפעיל חנות אונליין מלאה.",
+            "לעסקים שרוצים גם להציג את העסק בצורה מקצועית וגם לנהל לבד תכנים, מוצרים והזמנות, או להפעיל חנות אונליין מלאה.",
         features: [
             "אתר תדמית מלא (בית, אודות, שירותים, יצירת קשר ועוד)",
             "מערכת ניהול תוכן (Admin Panel) לניהול עצמאי של טקסטים, גלריות ותמונות",
@@ -96,29 +98,31 @@ const PACKAGES: Package[] = [
             "התאמה מלאה למובייל ולמחשב, ביצועים גבוהים ואבטחה מתקדמת",
             "חיבור לדומיין שלכם + אבטחת SSL",
         ],
-        time: "כ־4–6 שבועות – בהתאם להיקף החנות, המערכת והמעורבות שלכם בתהליך.",
+        time: "כ 4–6 שבועות, בהתאם להיקף החנות, המערכת והמעורבות שלכם בתהליך.",
         noteTitle: "כולל תחזוקה",
-        note: "חודש תחזוקה מלא מתנה. לאחר מכן אפשר להצטרף לתחזוקה שוטפת – ₪180 לחודש (אחסון, גיבויים, עדכוני אבטחה ותמיכה).",
+        note: "חודש תחזוקה מלא מתנה. לאחר מכן אפשר להצטרף לתחזוקה שוטפת, ₪180 לחודש (אחסון, גיבויים, עדכוני אבטחה ותמיכה).",
         from: true,
     },
 ];
 
+function clamp(lines: number) {
+    return {
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical" as const,
+        WebkitLineClamp: lines,
+        overflow: "hidden",
+    };
+}
+
 function FitToViewport({
     children,
-    reserveTop = 260,
-    reserveBottom = 240,
-    minScale = 0.72,
-    extraSpace = 56,
+    extraSpace = 14,
 }: {
     children: ReactNode;
-    reserveTop?: number;
-    reserveBottom?: number;
-    minScale?: number;
     extraSpace?: number;
 }) {
     const contentRef = useRef<HTMLDivElement | null>(null);
-    const [scale, setScale] = useState(1);
-    const [scaledHeight, setScaledHeight] = useState<number | null>(null);
+    const [height, setHeight] = useState<number | null>(null);
 
     useLayoutEffect(() => {
         const el = contentRef.current;
@@ -127,25 +131,7 @@ function FitToViewport({
         let raf = 0;
         let ro: ResizeObserver | null = null;
 
-        const measure = () => {
-            const prevTransform = el.style.transform;
-            const prevOrigin = el.style.transformOrigin;
-
-            el.style.transform = "none";
-            el.style.transformOrigin = "top center";
-
-            const naturalH = el.scrollHeight;
-
-            el.style.transform = prevTransform;
-            el.style.transformOrigin = prevOrigin;
-
-            const availableH = Math.max(320, window.innerHeight - reserveTop - reserveBottom);
-            const nextScaleRaw = availableH / Math.max(1, naturalH);
-            const nextScale = Math.min(1, Math.max(minScale, nextScaleRaw));
-
-            setScale(nextScale);
-            setScaledHeight(naturalH * nextScale);
-        };
+        const measure = () => setHeight(el.scrollHeight + extraSpace);
 
         const schedule = () => {
             cancelAnimationFrame(raf);
@@ -173,18 +159,11 @@ function FitToViewport({
             window.removeEventListener("resize", schedule);
             window.removeEventListener("orientationchange", schedule);
         };
-    }, [reserveTop, reserveBottom, minScale]);
+    }, [extraSpace]);
 
     return (
-        <div className="flex justify-center w-full" style={{ height: scaledHeight ? scaledHeight + extraSpace : "auto" }}>
-            <div
-                ref={contentRef}
-                style={{
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top center",
-                    width: "100%",
-                }}
-            >
+        <div className="flex justify-center w-full" style={{ height: height ?? "auto" }}>
+            <div ref={contentRef} className="w-full">
                 {children}
             </div>
         </div>
@@ -196,7 +175,8 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
     const handleNext = () => setActiveIndex((prev) => (prev + 1) % PACKAGES.length);
-    const handlePrev = () => setActiveIndex((prev) => (prev === 0 ? PACKAGES.length - 1 : prev - 1));
+    const handlePrev = () =>
+        setActiveIndex((prev) => (prev === 0 ? PACKAGES.length - 1 : prev - 1));
 
     const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
         setTouchStartX(e.touches[0].clientX);
@@ -229,26 +209,23 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                     viewport={{ once: true, amount: 0.35 }}
                     className="text-center"
                 >
-                    <h2 className="mb-3 text-3xl font-extrabold md:text-4xl">
+                    <h2 className="mb-3 text-3xl font-extrabold leading-tight md:text-4xl">
                         <span className="bg-gradient-to-r from-[#FF2E7E] via-[#FF7745] to-[#FF2E7E] bg-clip-text text-transparent drop-shadow-[0_0_22px_rgba(255,46,126,0.65)]">
                             בוחרים את החבילה שהכי מתאימה לעסק
                         </span>
                     </h2>
 
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                        <span className="h-[1px] w-20 md:w-28 rounded-full bg-gradient-to-l from-transparent via-[#3A86FF] to-transparent opacity-70" />
-                        <span className="w-10 md:w-14 h-[3px] rounded-full bg-gradient-to-r from-[#3A86FF] to-[#00C9A7] shadow-[0_0_16px_rgba(58,134,255,0.85)]" />
-                        <span className="h-[1px] w-20 md:w-28 rounded-full bg-gradient-to-r from-transparent via-[#00C9A7] to-transparent opacity-70" />
+                    <div className="flex flex-col items-center justify-center gap-2 mb-4">
+                        <span className="w-14 h-[3px] rounded-full bg-gradient-to-r from-[#3A86FF] to-[#00C9A7] shadow-[0_0_16px_rgba(58,134,255,0.85)]" />
+                        <span className="h-[1px] w-40 rounded-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
                     </div>
 
-                    <p className="text-sm md:text-base text-white/75 max-w-2xl mx-auto leading-[1.25]">
-                        כל חבילה נבנית בקוד מותאם אישית, עם ביצועים גבוהים,
-                        <br />
-                        אבטחה ותכנון חוויית משתמש שמכוון לתוצאות – לא סתם "עוד אתר".
+                    <p className="text-[13px] sm:text-sm md:text-base text-white/75 max-w-2xl mx-auto leading-relaxed">
+                        כל חבילה נבנית בקוד מותאם אישית, עם ביצועים גבוהים, אבטחה ותכנון חוויית משתמש שמכוון לתוצאות.
                     </p>
                 </motion.div>
 
-                <div className="h-12 md:h-16 lg:h-20" />
+                <div className="h-10 md:h-16" />
 
                 <div className="md:hidden">
                     <motion.div
@@ -256,28 +233,22 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.35 }}
-                        className="flex justify-center px-4"
+                        className="flex justify-center"
                     >
                         <div
-                            className="relative w-11/12 max-w-md"
+                            className="relative w-full max-w-[430px]"
                             onTouchStart={handleTouchStart}
                             onTouchEnd={handleTouchEnd}
                         >
-                            <FitToViewport
-                                key={activeIndex}
-                                reserveTop={260}
-                                reserveBottom={240}
-                                minScale={0.72}
-                                extraSpace={72}
-                            >
-                                <PackageCard pkg={PACKAGES[activeIndex]} />
+                            <FitToViewport key={activeIndex} extraSpace={14}>
+                                <PackageCard pkg={PACKAGES[activeIndex]} compact />
                             </FitToViewport>
 
                             <button
                                 type="button"
                                 onClick={handlePrev}
                                 aria-label="החבילה הקודמת"
-                                className="absolute left-0 flex items-center justify-center w-10 h-10 transition -translate-x-3 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/30 text-white/85 backdrop-blur-md hover:border-white/60 hover:bg-white/5 active:scale-95"
+                                className="absolute left-0 flex items-center justify-center w-10 h-10 -translate-x-2 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/35 text-white/90 backdrop-blur-md active:scale-95"
                                 style={{ boxShadow: "0 0 18px rgba(58,134,255,0.25)" }}
                             >
                                 <span className="text-lg leading-none">›</span>
@@ -287,7 +258,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                                 type="button"
                                 onClick={handleNext}
                                 aria-label="החבילה הבאה"
-                                className="absolute right-0 flex items-center justify-center w-10 h-10 transition translate-x-3 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/30 text-white/85 backdrop-blur-md hover:border-white/60 hover:bg-white/5 active:scale-95"
+                                className="absolute right-0 flex items-center justify-center w-10 h-10 translate-x-2 -translate-y-1/2 border rounded-full top-1/2 border-white/20 bg-black/35 text-white/90 backdrop-blur-md active:scale-95"
                                 style={{ boxShadow: "0 0 18px rgba(0,201,167,0.22)" }}
                             >
                                 <span className="text-lg leading-none">‹</span>
@@ -301,7 +272,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                         whileInView="show"
                         viewport={{ once: true, amount: 0.35 }}
                         className="flex items-center justify-center"
-                        style={{ marginTop: "1.1rem", marginBottom: "2rem" }}
+                        style={{ marginTop: "1.05rem", marginBottom: "1.8rem" }}
                     >
                         <div className="flex gap-2">
                             {PACKAGES.map((pkg, index) => (
@@ -311,8 +282,8 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                                     onClick={() => setActiveIndex(index)}
                                     aria-label={`מעבר לחבילה ${index + 1}`}
                                     className={`h-2.5 rounded-full transition-all ${index === activeIndex
-                                            ? "w-6 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_16px_rgba(255,46,126,0.7)]"
-                                            : "w-2.5 bg-white/20"
+                                        ? "w-7 bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_16px_rgba(255,46,126,0.7)]"
+                                        : "w-2.5 bg-white/20"
                                         }`}
                                 />
                             ))}
@@ -320,7 +291,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                     </motion.div>
                 </div>
 
-                <div className="items-start hidden gap-6 md:grid md:grid-cols-3 lg:gap-8">
+                <div className="items-stretch hidden gap-6 md:grid md:grid-cols-3 lg:gap-8">
                     {PACKAGES.map((pkg, index) => (
                         <motion.div
                             key={pkg.id}
@@ -329,7 +300,7 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
                             whileInView="show"
                             viewport={{ once: true, amount: 0.35 }}
                             custom={index}
-                            className="flex justify-center"
+                            className="flex"
                         >
                             <PackageCard pkg={pkg} />
                         </motion.div>
@@ -342,136 +313,221 @@ export default function PackagesSection({ id, className }: PackagesSectionProps)
 
 type PackageCardProps = {
     pkg: Package;
+    compact?: boolean;
 };
 
-function PackageCard({ pkg }: PackageCardProps) {
-    const isFrom = !!pkg.from;
+function PackageCard({ pkg, compact }: PackageCardProps) {
+    const [open, setOpen] = useState(false);
 
     return (
         <div
-            className="relative flex flex-col w-full max-w-md mx-auto border rounded-3xl"
+            className="relative flex flex-col w-full overflow-hidden border rounded-3xl"
             style={{
-                padding:
-                    "clamp(1.35rem, 4vw, 2.1rem) clamp(1.05rem, 4.2vw, 1.9rem) clamp(1.05rem, 3vw, 1.7rem)",
-                background: "linear-gradient(135deg, rgba(9,9,15,0.9), rgba(24,9,30,0.95))",
-                borderColor: "rgba(255,119,69,0.95)",
-                boxShadow: "0 0 28px rgba(255,119,69,0.45)",
-                borderWidth: "2px",
+                background: "linear-gradient(135deg, rgba(9,9,15,0.74), rgba(24,9,30,0.86))",
+                borderColor: "rgba(255,255,255,0.12)",
+                boxShadow: "0 0 28px rgba(255,46,126,0.20)",
             }}
         >
-            {pkg.id === "landing" && (
-                <div className="absolute top-4 left-4 -rotate-6">
-                    <div
-                        className="inline-flex items-center justify-center text-center border rounded-3xl font-[Heebo] text-[13px] md:text-[14px] text-white/90"
-                        style={{
-                            padding: "0.35rem 1.2rem",
-                            background: "linear-gradient(135deg, #3A86FF, #00C9A7)",
-                            borderColor: "rgba(58,134,255,0.95)",
-                            boxShadow: "0 0 22px rgba(58,134,255,0.65)",
-                        }}
-                    >
-                        {pkg.price}
-                    </div>
-                </div>
-            )}
+            <div className={compact ? "p-4" : "p-5 sm:p-6"}>
+                <div className="text-center">
+                    <h3 className={`${compact ? "text-[18px]" : "text-[18px] sm:text-[20px]"} font-extrabold text-white leading-tight`}>
+                        {pkg.name}
+                    </h3>
 
-            <div className="flex flex-col max-w-xs mx-auto text-center sm:max-w-sm gap-7">
-                <div className="flex flex-col items-center gap-1.5 text-center">
-                    <h3 className="text-xl font-bold text-white md:text-2xl">{pkg.name}</h3>
-
-                    <div className="flex items-center justify-center w-full max-w-[220px] gap-1">
+                    <div className="mt-2 flex items-center justify-center w-full max-w-[240px] mx-auto gap-1">
                         <span className="h-[1px] flex-1 rounded-full bg-gradient-to-l from-transparent via-[#FF2E7E] to-transparent opacity-70" />
-                        <span className="w-7 h-[3px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_10px_rgba(255,46,126,0.9)]" />
+                        <span className="w-10 h-[3px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_10px_rgba(255,46,126,0.9)]" />
                         <span className="h-[1px] flex-1 rounded-full bg-gradient-to-r from-transparent via-[#FF7745] to-transparent opacity-70" />
                     </div>
 
-                    <p className="mt-1 text-sm leading-relaxed text-white/80">{pkg.subtitle}</p>
+                    <p
+                        className={`${compact ? "mt-2 text-[13px]" : "mt-3 text-[13px] sm:text-[14px]"} leading-relaxed text-white/78 mx-auto max-w-[26rem]`}
+                        style={compact ? clamp(2) : undefined}
+                    >
+                        {pkg.subtitle}
+                    </p>
                 </div>
 
-                <div className="flex flex-col gap-8 text-sm">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">למי זה מתאים?</p>
-                            <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
-                        </div>
-                        <p className="text-sm leading-snug text-center text-white/85">{pkg.suits}</p>
-                    </div>
+                <div className={compact ? "mt-4 grid gap-3" : "mt-5 grid gap-4"}>
+                    <InfoBlock title="למי זה מתאים?" compact={compact}>
+                        <p
+                            className={`${compact ? "text-[13px]" : "text-[13.5px] sm:text-[14px]"} leading-relaxed text-white/82 text-center`}
+                            style={compact ? clamp(3) : undefined}
+                        >
+                            {pkg.suits}
+                        </p>
+                    </InfoBlock>
 
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">מה תקבלו?</p>
-                            <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#3A86FF] to-[#00C9A7] opacity-70" />
-                        </div>
-                        <ul className="flex flex-col gap-1.5 text-sm text-white/85 leading-snug">
-                            {pkg.features.map((feature) => (
-                                <li key={feature} className="text-center">
-                                    {feature}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {compact ? (
+                        <AccordionBlock
+                            title="מה תקבלו?"
+                            open={open}
+                            onToggle={() => setOpen((v) => !v)}
+                            compact
+                            preview={
+                                <ul className="grid gap-2 text-[13px] leading-relaxed text-white/82 text-center">
+                                    {pkg.features.slice(0, 2).map((feature) => (
+                                        <li key={feature}>{feature}</li>
+                                    ))}
+                                </ul>
+                            }
+                        >
+                            <ul className="grid gap-2 text-[13px] leading-relaxed text-white/82 text-center">
+                                {pkg.features.map((feature) => (
+                                    <li key={feature}>{feature}</li>
+                                ))}
+                            </ul>
+                        </AccordionBlock>
+                    ) : (
+                        <InfoBlock title="מה תקבלו?" compact={compact}>
+                            <ul className="grid gap-2 text-[13.5px] sm:text-[14px] leading-relaxed text-white/82 text-center">
+                                {pkg.features.map((feature) => (
+                                    <li key={feature}>{feature}</li>
+                                ))}
+                            </ul>
+                        </InfoBlock>
+                    )}
 
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">זמן הקמה</p>
-                            <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
-                        </div>
-                        <p className="text-sm leading-snug text-center text-white/85">{pkg.time}</p>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-col items-center gap-1">
-                            <p className="text-xs font-semibold text-center text-white/70">{pkg.noteTitle}</p>
-                            <span className="w-10 h-[1px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] opacity-60" />
-                        </div>
-                        <p className="text-sm leading-snug text-center text-white/85">{pkg.note}</p>
-                    </div>
+                    <NotesStack time={pkg.time} noteTitle={pkg.noteTitle} note={pkg.note} compact={compact} />
                 </div>
             </div>
 
-            <div
-                className="flex flex-col items-center border-t border-white/15"
-                style={{
-                    marginTop: "2.8rem",
-                    paddingTop: "2rem",
-                    paddingBottom: "0.35rem",
-                    rowGap: "1.6rem",
-                    width: "100%",
-                }}
-            >
-                {!isFrom && pkg.id !== "landing" && (
-                    <div className="px-7 py-2.5 rounded-2xl bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] text-sm font-bold text-white shadow-[0_0_18px_rgba(255,46,126,0.7)] tracking-wide">
-                        {pkg.price}
-                    </div>
-                )}
-
-                <button
-                    type="button"
-                    className="inline-flex items-center justify-center gap-2 text-center border rounded-3xl font-[Heebo] text-[14px] md:text-[15px] text-white/90 transition-all hover:shadow-[0_0_26px_rgba(58,134,255,0.7)]"
+            <div className={`mt-auto border-t border-white/10 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
+                <a
+                    href={`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(
+                        `היי דור, אשמח לשמוע עוד על החבילה: ${pkg.name}.`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-[14px] sm:text-[15px] font-extrabold text-white/90 transition active:scale-[0.99]"
                     style={{
-                        padding: "0.45rem 1.6rem",
-                        background: "linear-gradient(135deg, rgba(58,134,255,0.26), rgba(0,201,167,0.26))",
-                        borderColor: "rgba(58,134,255,0.95)",
-                        boxShadow: "0 0 20px rgba(58,134,255,0.5)",
+                        background: "linear-gradient(135deg, rgba(58,134,255,0.24), rgba(0,201,167,0.24))",
+                        borderColor: "rgba(58,134,255,0.65)",
+                        boxShadow: "0 0 22px rgba(58,134,255,0.30)",
                     }}
                 >
                     <FaWhatsapp className="text-lg" />
-                    <span>נשמע טוב</span>
-                </button>
+                    <span>נשמע טוב, דבר איתי</span>
+                </a>
 
-                {isFrom && (
-                    <p
-                        className="text-center"
-                        style={{
-                            fontSize: "11px",
-                            color: "rgba(255,255,255,0.45)",
-                            marginTop: "0.05rem",
-                        }}
-                    >
-                        החל מ־ {pkg.price}
-                    </p>
-                )}
+                <p className="mt-3 text-center text-[11px] text-white/45">
+                    אפשר גם רק לשאול שאלה, בלי התחייבות.
+                </p>
             </div>
+        </div>
+    );
+}
+
+function SectionHeader({ title, compact }: { title: string; compact?: boolean }) {
+    return (
+        <div className="flex flex-col items-center gap-2 text-center">
+            <p className={`${compact ? "text-[11.5px]" : "text-[12px]"} font-extrabold text-white/70`}>
+                {title}
+            </p>
+            <span className="w-10 h-[3px] rounded-full bg-gradient-to-r from-[#FF2E7E] to-[#FF7745] shadow-[0_0_12px_rgba(255,46,126,0.55)]" />
+        </div>
+    );
+}
+
+function InfoBlock({
+    title,
+    children,
+    compact,
+}: {
+    title: string;
+    children: ReactNode;
+    compact?: boolean;
+}) {
+    return (
+        <div className={`rounded-2xl border border-white/10 bg-black/25 backdrop-blur-md ${compact ? "p-3" : "p-4"}`}>
+            <SectionHeader title={title} compact={compact} />
+            <div className="mt-3">{children}</div>
+        </div>
+    );
+}
+
+function AccordionBlock({
+    title,
+    open,
+    onToggle,
+    preview,
+    children,
+    compact,
+}: {
+    title: string;
+    open: boolean;
+    onToggle: () => void;
+    preview: ReactNode;
+    children: ReactNode;
+    compact?: boolean;
+}) {
+    return (
+        <div className={`rounded-2xl border border-white/10 bg-black/25 backdrop-blur-md ${compact ? "p-3" : "p-4"}`}>
+            <SectionHeader title={title} compact={compact} />
+
+            <button
+                type="button"
+                onClick={onToggle}
+                aria-expanded={open}
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-[12px] font-extrabold text-white/85 transition active:scale-[0.99]"
+                style={{
+                    background: "linear-gradient(135deg, rgba(58,134,255,0.16), rgba(0,201,167,0.16))",
+                    borderColor: "rgba(255,255,255,0.12)",
+                }}
+            >
+                <span>{open ? "סגור פירוט" : "הצג פירוט"}</span>
+                <span className={`transition ${open ? "rotate-180" : "rotate-0"}`}>˅</span>
+            </button>
+
+            <div className="mt-3">
+                {!open && <div>{preview}</div>}
+
+                <AnimatePresence initial={false}>
+                    {open && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                            className="overflow-hidden"
+                        >
+                            <div className="pt-1">{children}</div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+}
+
+function NotesStack({
+    time,
+    noteTitle,
+    note,
+    compact,
+}: {
+    time: string;
+    noteTitle: string;
+    note: string;
+    compact?: boolean;
+}) {
+    return (
+        <div className={`rounded-2xl border border-white/10 bg-black/20 backdrop-blur-md ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}>
+            <SectionHeader title="הערות" compact={compact} />
+
+            <p
+                className={`mt-3 ${compact ? "text-[11.5px]" : "text-[12px]"} leading-relaxed text-white/58 text-center`}
+                style={compact ? clamp(2) : undefined}
+            >
+                <span className="font-extrabold text-white/72">זמן הקמה:</span> {time}
+            </p>
+
+            <p
+                className={`mt-2 ${compact ? "text-[11.5px]" : "text-[12px]"} leading-relaxed text-white/58 text-center`}
+                style={compact ? clamp(2) : undefined}
+            >
+                <span className="font-extrabold text-white/72">{noteTitle}:</span> {note}
+            </p>
         </div>
     );
 }
