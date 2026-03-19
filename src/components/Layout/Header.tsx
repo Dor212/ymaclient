@@ -60,7 +60,7 @@ const Header = () => {
 
                         <div className="flex justify-center order-2 md:justify-start md:order-1">
                             <a
-                                href="/"
+                                href="#logo"
                                 className="inline-flex items-center"
                                 aria-label="YMA Home"
                             >

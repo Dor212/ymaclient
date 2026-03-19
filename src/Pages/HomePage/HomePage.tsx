@@ -20,8 +20,8 @@ const HomePage = () => {
                 <div className="mt-10 md:mt-14 flex flex-col gap-[4rem] md:gap-[5.5rem]">
                     <AboutSection id="about" className="w-full" />
                     <PortfolioSection id="portfolio" />
-                    <ProcessSectionA id="process" />
                     <PackagesSection id="packages" />
+                    <ProcessSectionA id="process" />
                     <AskClientsSection id="ask-clients" />
                 </div>
 
