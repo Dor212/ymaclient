@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import PageSEO from "../../components/seo/PageSEO";
-import { CONFIGURED_BRIEF_ENDPOINT, EMPTY_FORM, EMPTY_UPLOADS, FALLBACK_ENDPOINT, PROJECT_OPTIONS, fadeUp, isProjectType } from "./projectBrief.constants";
+import { CONFIGURED_BRIEF_ENDPOINT, EMPTY_FORM, EMPTY_UPLOADS, PROJECT_OPTIONS, fadeUp, isProjectType } from "./projectBrief.constants";
 import { buildFallbackMessage, buildStructuredPayload, cleanPhone } from "./projectBrief.utils";
 import { validateForm } from "./projectBrief.validation";
 import type { BriefErrors, FormState, ProjectType, UploadState } from "./projectBrief.types";
@@ -16,6 +16,8 @@ import ProjectSpecificSection from "./sections/ProjectSpecificSection";
 import UploadsSection from "./sections/UploadsSection";
 import ExtraNotesSection from "./sections/ExtraNotesSection";
 import FinalSubmitSection from "./sections/FinalSubmitSection";
+import SubmitFeedbackModal from "./sections/SubmitFeedbackModal";
+import PortfolioFloatingLink from "./components/PortfolioFloatingLink";
 
 export default function ProjectBriefPage() {
   const [selectedType, setSelectedType] = useState<ProjectType | null>(null);
@@ -26,6 +28,7 @@ export default function ProjectBriefPage() {
   const [statusMessage, setStatusMessage] = useState("");
   const [errors, setErrors] = useState<BriefErrors>({});
   const formRef = useRef<HTMLDivElement | null>(null);
+  const submitRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -47,6 +50,43 @@ export default function ProjectBriefPage() {
     () => PROJECT_OPTIONS.find((option) => option.id === activePreviewId) ?? null,
     [activePreviewId],
   );
+
+  const feedbackTitle =
+    status === "success"
+      ? "השאלון נשלח בהצלחה"
+      : status === "error"
+        ? "השליחה לא הושלמה"
+        : "";
+
+  const getErrorMessage = (statusCode?: number, fallback = "") => {
+    if (statusCode === 503) {
+      return "הטופס הגיע לשרת, אבל השירות שמטפל בפניות לא זמין כרגע.\nזה בדרך כלל אומר שהבעיה בצד השרת או בשירות המייל, לא במה שמילאת. אפשר לנסות שוב בעוד רגע.";
+    }
+
+    if (statusCode === 500) {
+      return "השליחה הגיעה לשרת, אבל משהו נשבר שם באמצע.\nזה כבר נשמע כמו תקלה בצד השרת, אז כדאי לבדוק את הלוגים שלו.";
+    }
+
+    if (statusCode === 404) {
+      return "הטופס נשלח לכתובת שלא נמצאה בשרת.\nשווה לבדוק שהנתיב של reference-requests באמת קיים ועובד בפרודקשן.";
+    }
+
+    if (statusCode === 400 || statusCode === 422) {
+      return fallback || "השרת דחה את השליחה. שווה לבדוק אם הוא מצפה לשדות אחרים או לפורמט שונה.";
+    }
+
+    return fallback || "לא הצלחתי לשלוח כרגע את הטופס. אפשר לנסות שוב בעוד רגע.";
+  };
+
+  const scrollToSubmitArea = () => {
+    submitRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  const closeFeedback = () => {
+    if (status === "submitting") return;
+    setStatus("idle");
+    setStatusMessage("");
+  };
 
   const setField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -116,48 +156,41 @@ export default function ProjectBriefPage() {
     setStatusMessage("");
 
     try {
-      if (CONFIGURED_BRIEF_ENDPOINT) {
-        const payload = buildStructuredPayload(selectedOption, form, uploads);
-        const formData = new FormData();
-        formData.append("selectedType", selectedOption.id);
-        formData.append("selectedTitle", selectedOption.title);
-        formData.append("summary", buildFallbackMessage(selectedOption, form, uploads));
-        formData.append("payload", JSON.stringify(payload));
-        formData.append("fullName", form.fullName.trim());
-        formData.append("phone", cleanPhone(form.phone));
-        formData.append("email", form.email.trim());
-        formData.append("businessName", form.businessName.trim());
-        uploads.branding.forEach((file) => formData.append("brandingFiles", file));
-        uploads.supporting.forEach((file) => formData.append("supportingFiles", file));
+      const payload = buildStructuredPayload(selectedOption, form, uploads);
+      const formData = new FormData();
+      formData.append("selectedType", selectedOption.id);
+      formData.append("selectedTitle", selectedOption.title);
+      formData.append("summary", buildFallbackMessage(selectedOption, form, uploads));
+      formData.append("payload", JSON.stringify(payload));
+      formData.append("fullName", form.fullName.trim());
+      formData.append("phone", cleanPhone(form.phone));
+      formData.append("email", form.email.trim());
+      formData.append("businessName", form.businessName.trim());
+      uploads.branding.forEach((file) => formData.append("brandingFiles", file));
+      uploads.supporting.forEach((file) => formData.append("supportingFiles", file));
 
-        const response = await fetch(CONFIGURED_BRIEF_ENDPOINT, {
-          method: "POST",
-          body: formData,
-        });
+      const response = await fetch(CONFIGURED_BRIEF_ENDPOINT, {
+        method: "POST",
+        body: formData,
+      });
 
-        if (!response.ok) {
-          throw new Error("submit_failed");
+      let errorText = "";
+
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type") || "";
+
+        try {
+          if (contentType.includes("application/json")) {
+            const data = await response.json();
+            errorText = data?.error || data?.message || "";
+          } else {
+            errorText = (await response.text()).trim();
+          }
+        } catch {
+          errorText = "";
         }
-      } else {
-        const message = buildFallbackMessage(selectedOption, form, uploads);
-        const response = await fetch(FALLBACK_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.fullName.trim(),
-            phone: cleanPhone(form.phone),
-            email: form.email.trim(),
-            businessName: form.businessName.trim(),
-            niche: selectedOption.title,
-            note: message,
-            message,
-            projectType: selectedOption.fallbackProjectType,
-          }),
-        });
 
-        if (!response.ok) {
-          throw new Error("submit_failed");
-        }
+        throw new Error(getErrorMessage(response.status, errorText));
       }
 
       setStatus("success");
@@ -165,15 +198,16 @@ export default function ProjectBriefPage() {
       setForm(EMPTY_FORM);
       setUploads(EMPTY_UPLOADS);
       setErrors({});
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch {
+      scrollToSubmitArea();
+    } catch (error) {
       setStatus("error");
-      setStatusMessage("לא הצלחתי לשלוח כרגע את הטופס. אפשר לנסות שוב בעוד רגע.");
+      setStatusMessage(error instanceof Error ? error.message : "לא הצלחתי לשלוח כרגע את הטופס. אפשר לנסות שוב בעוד רגע.");
+      scrollToSubmitArea();
     }
   };
 
   return (
-    <div dir="rtl" className="relative overflow-hidden px-5 pb-16 pt-8 sm:px-6 sm:pt-10 lg:px-8">
+    <div dir="rtl" className="relative px-5 pt-8 pb-16 overflow-hidden sm:px-6 sm:pt-10 lg:px-8">
       <PageSEO
         path="/project-brief"
         title="Y.M.A | שאלון פתיחה לפרויקט"
@@ -189,11 +223,13 @@ export default function ProjectBriefPage() {
         }}
       />
 
+      <PortfolioFloatingLink />
+
       <div className="mx-auto max-w-7xl">
         {currentScreen === "selection" ? <SelectionScreen errors={errors} onOpenPreview={setActivePreviewId} /> : null}
 
         {currentScreen === "form" && selectedOption ? (
-          <div ref={formRef} className="mx-auto max-w-6xl pt-2 sm:pt-4">
+          <div ref={formRef} className="max-w-6xl pt-2 mx-auto sm:pt-4">
             <FormHeader selectedOption={selectedOption} onChangeProject={clearSelection} />
 
             <motion.section
@@ -203,20 +239,6 @@ export default function ProjectBriefPage() {
               custom={8}
               className="mx-auto max-w-6xl rounded-[34px] border border-white/10 bg-[linear-gradient(155deg,rgba(8,12,24,0.82),rgba(18,9,22,0.72))] p-5 shadow-[0_0_42px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:p-7 lg:p-9"
             >
-              {status !== "idle" ? (
-                <div
-                  className={`mb-6 rounded-[24px] border px-5 py-4 text-right text-[14px] leading-6 ${
-                    status === "success"
-                      ? "border-[#00C9A7]/25 bg-[#00C9A7]/10 text-white"
-                      : status === "error"
-                        ? "border-[#FF2E7E]/25 bg-[#FF2E7E]/10 text-white"
-                        : "border-[#3A86FF]/25 bg-[#3A86FF]/10 text-white"
-                  }`}
-                >
-                  {statusMessage || (status === "submitting" ? "שולח את הפרטים..." : "")}
-                </div>
-              ) : null}
-
               <form onSubmit={submit} className="space-y-10">
                 <div className="grid gap-10 lg:grid-cols-[1.06fr_0.94fr]">
                   <div className="space-y-10">
@@ -233,11 +255,25 @@ export default function ProjectBriefPage() {
                 <ProjectSpecificSection selectedType={selectedOption.id} form={form} errors={errors} setField={setField} />
                 <UploadsSection uploads={uploads} setUploads={setUploads} />
                 <ExtraNotesSection form={form} errors={errors} setField={setField} />
-                <FinalSubmitSection isSubmitting={status === "submitting"} />
+                <div ref={submitRef}>
+                  <FinalSubmitSection
+                    isSubmitting={status === "submitting"}
+                  />
+                </div>
               </form>
             </motion.section>
           </div>
         ) : null}
+
+        <SubmitFeedbackModal
+          open={status === "success" || status === "error"}
+          status={status === "success" ? "success" : "error"}
+          title={feedbackTitle}
+          message={statusMessage}
+          onClose={closeFeedback}
+          onRetry={status === "error" ? () => closeFeedback() : undefined}
+          showRetry={status === "error"}
+        />
 
         <AnimatePresence>
           {activePreviewOption ? (

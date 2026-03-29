@@ -9,8 +9,8 @@ import {
 import type { FormState, OptionItem, ProjectOption, ProjectType, UploadState } from "./projectBrief.types";
 
 export const RAW_API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
-export const CONFIGURED_BRIEF_ENDPOINT = (import.meta.env.VITE_PROJECT_BRIEF_ENDPOINT || "").trim();
-export const FALLBACK_ENDPOINT = `${RAW_API_BASE}/api/reference-requests`;
+export const DEFAULT_BRIEF_ENDPOINT = `${RAW_API_BASE}/api/project-briefs`;
+export const CONFIGURED_BRIEF_ENDPOINT = ((import.meta.env.VITE_PROJECT_BRIEF_ENDPOINT || "").trim() || DEFAULT_BRIEF_ENDPOINT);
 
 export const fadeUp: Variants = {
   hidden: { opacity: 0, y: 22 },
