@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { authClient } from "../api/authClient";
 import { setAccessToken } from "../api/authToken";
 
@@ -13,14 +14,23 @@ type AuthCtx = {
 const AuthContext = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const location = useLocation();
     const [status, setStatus] = useState<AuthStatus>("loading");
 
-    // React StrictMode ב-dev מריץ useEffect פעמיים בכוונה, אז אנחנו חוסמים את זה.
-    const didInit = useRef(false);
+    const lastBootPathRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (didInit.current) return;
-        didInit.current = true;
+        const isAdminPath = location.pathname.startsWith("/admin");
+
+        if (!isAdminPath) {
+            setAccessToken(null);
+            setStatus("guest");
+            lastBootPathRef.current = null;
+            return;
+        }
+
+        if (lastBootPathRef.current === location.pathname) return;
+        lastBootPathRef.current = location.pathname;
 
         const boot = async () => {
             try {
@@ -42,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         boot();
-    }, []);
+    }, [location.pathname]);
 
     const value = useMemo<AuthCtx>(() => {
         return {

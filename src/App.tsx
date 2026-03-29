@@ -1,5 +1,5 @@
 import { HelmetProvider } from "react-helmet-async";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Layout/Header";
 import Footer from "./components/Layout/Footer";
 import HomePage from "./Pages/HomePage/HomePage";
@@ -12,51 +12,61 @@ import AboutSitePage from "./Pages/AboutSitePage/AboutSitePage";
 import AdminLoginPage from "./Pages/AdminPage/AdminLoginPage";
 import AdminProtectedRoute from "./routes/AdminProtectedRoute";
 import { AuthProvider } from "./auth/AuthProvider";
+import ProjectBriefPage from "./Pages/ProjectBriefPage/ProjectBriefPage";
+
+function AppLayout() {
+  const location = useLocation();
+  const isBriefPage = location.pathname === "/project-brief";
+
+  return (
+    <div className="relative min-h-[100svh] text-white">
+      <div className="fixed inset-0 -z-10 bg-center bg-cover bg-no-repeat bg-[url('/BgYMAm.png')] md:bg-[url('/BgYMA.png')] bg-scroll md:bg-fixed" />
+      <div className="fixed inset-0 -z-10 bg-black/35" />
+
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:right-2 focus:z-50 focus:rounded focus:bg-black/80 focus:text-white focus:px-3 focus:py-2"
+      >
+        דלג לתוכן
+      </a>
+
+      {!isBriefPage ? <Header /> : null}
+      {!isBriefPage ? <SocialFloatingBar /> : null}
+
+      <main id="main" className={isBriefPage ? "" : "pt-20"}>
+        <CookieBanner />
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="/legal" element={<LegalPage />} />
+          <Route path="/about-site/:id" element={<AboutSitePage />} />
+          <Route path="/project-brief" element={<ProjectBriefPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+
+          <Route
+            path="/admin/*"
+            element={
+              <AdminProtectedRoute>
+                <AdminPage />
+              </AdminProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+
+      {!isBriefPage ? <Footer /> : null}
+    </div>
+  );
+}
 
 function App() {
   return (
     <AuthProvider>
       <HelmetProvider>
-        <div className="relative min-h-[100svh] text-white">
-          <div className="fixed inset-0 -z-10 bg-center bg-cover bg-no-repeat bg-[url('/BgYMAm.png')] md:bg-[url('/BgYMA.png')] bg-scroll md:bg-fixed" />
-          <div className="fixed inset-0 -z-10 bg-black/35" />
-
-          <a
-            href="#main"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:right-2 focus:z-50 focus:rounded focus:bg-black/80 focus:text-white focus:px-3 focus:py-2"
-          >
-            דלג לתוכן
-          </a>
-
-          <Header />
-          <SocialFloatingBar />
-
-          <main id="main" className="pt-20">
-            <CookieBanner />
-
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/home" element={<Navigate to="/" replace />} />
-              <Route path="/legal" element={<LegalPage />} />
-              <Route path="/about-site/:id" element={<AboutSitePage />} />
-
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-
-              <Route
-                path="/admin/*"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminPage />
-                  </AdminProtectedRoute>
-                }
-              />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-
-          <Footer />
-        </div>
+        <AppLayout />
       </HelmetProvider>
     </AuthProvider>
   );
