@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
-import { api } from "../../api/axios";
+import { api } from "../../../api/axios";
 
 type CarouselItem = { src?: string; alt?: string; node?: ReactNode };
 
