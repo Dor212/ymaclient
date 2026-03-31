@@ -10,20 +10,23 @@ import AskClientsSection from "../../components/Sections/AskClientsSection";
 
 const SCROLL_TARGET_STORAGE_KEY = "ymaScrollTarget";
 const SCROLL_RETRY_INTERVAL_MS = 180;
-const SCROLL_MAX_ATTEMPTS = 18;
+const SCROLL_MAX_ATTEMPTS = 20;
+const SCROLL_TOP_OFFSET = 110;
 
 const HomePage = () => {
     const location = useLocation();
 
     useEffect(() => {
-        let id = location.hash.replace("#", "").trim();
+        let id = "";
+
+        try {
+            id = sessionStorage.getItem(SCROLL_TARGET_STORAGE_KEY)?.trim() ?? "";
+        } catch {
+            id = "";
+        }
 
         if (!id) {
-            try {
-                id = sessionStorage.getItem(SCROLL_TARGET_STORAGE_KEY)?.trim() ?? "";
-            } catch {
-                id = "";
-            }
+            id = location.hash.replace("#", "").trim();
         }
 
         if (!id) return;
@@ -39,11 +42,26 @@ const HomePage = () => {
             }
         };
 
-        const tryScrollToTarget = () => {
-            const element = document.getElementById(id);
+        const scrollToElement = (element: HTMLElement) => {
+            const top =
+                window.scrollY + element.getBoundingClientRect().top - SCROLL_TOP_OFFSET;
 
-            if (element) {
-                element.scrollIntoView({ behavior: "smooth", block: "start" });
+            window.scrollTo({
+                top: Math.max(top, 0),
+                behavior: "smooth",
+            });
+        };
+
+        const isTargetReady = (element: HTMLElement) => {
+            if (id !== "portfolio") return true;
+            return element.dataset.ready === "true";
+        };
+
+        const tryScrollToTarget = () => {
+            const element = document.getElementById(id) as HTMLElement | null;
+
+            if (element && isTargetReady(element)) {
+                scrollToElement(element);
                 clearStoredTarget();
                 return;
             }
@@ -51,13 +69,29 @@ const HomePage = () => {
             attempts += 1;
             if (attempts >= SCROLL_MAX_ATTEMPTS) return;
 
-            timeoutId = window.setTimeout(tryScrollToTarget, SCROLL_RETRY_INTERVAL_MS);
+            timeoutId = window.setTimeout(
+                tryScrollToTarget,
+                SCROLL_RETRY_INTERVAL_MS
+            );
         };
 
-        timeoutId = window.setTimeout(tryScrollToTarget, 80);
+        const onPortfolioReady = () => {
+            if (id !== "portfolio") return;
+
+            const element = document.getElementById("portfolio") as HTMLElement | null;
+            if (!element) return;
+
+            scrollToElement(element);
+            clearStoredTarget();
+        };
+
+        window.addEventListener("yma:portfolio-ready", onPortfolioReady);
+
+        timeoutId = window.setTimeout(tryScrollToTarget, 100);
 
         return () => {
             if (timeoutId) window.clearTimeout(timeoutId);
+            window.removeEventListener("yma:portfolio-ready", onPortfolioReady);
         };
     }, [location.hash, location.pathname]);
 

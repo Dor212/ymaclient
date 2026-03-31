@@ -76,7 +76,7 @@ export default function ProjectChoiceModal({ option, onClose, onConfirm }: Proje
 
               <SentenceLines text={option.short} className="mt-5 text-[14px] font-semibold leading-6 text-white/88 md:text-[18px] md:leading-7" />
 
-              <div className="mx-auto mt-5 max-w-[66ch] rounded-[22px] border border-white/10 bg-black/20 px-4 py-4 text-right backdrop-blur-md md:mt-6 md:px-8 md:py-7">
+              <div className="mx-auto mt-5 max-w-[66ch] rounded-[22px] border border-white/10 bg-black/20 px-4 py-4 text-center backdrop-blur-md md:mt-6 md:px-8 md:py-7">
                 <SentenceLines text={option.description} className="text-[14px] leading-6 text-white/78 md:text-[16px] md:leading-7" />
               </div>
 

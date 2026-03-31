@@ -13,10 +13,13 @@ import AdminLoginPage from "./Pages/AdminPage/AdminLoginPage";
 import AdminProtectedRoute from "./routes/AdminProtectedRoute";
 import { AuthProvider } from "./auth/AuthProvider";
 import ProjectBriefPage from "./Pages/ProjectBriefPage/ProjectBriefPage";
+import GraphicsLabPage from "./Pages/GraphicsLabPage/GraphicsLabPage";
 
 function AppLayout() {
   const location = useLocation();
   const isBriefPage = location.pathname === "/project-brief";
+  const isGraphicsLabPage = location.pathname === "/graphics-lab";
+  const isImmersivePage = isBriefPage || isGraphicsLabPage;
 
   return (
     <div className="relative min-h-[100svh] text-white">
@@ -30,10 +33,10 @@ function AppLayout() {
         דלג לתוכן
       </a>
 
-      {!isBriefPage ? <Header /> : null}
-      {!isBriefPage ? <SocialFloatingBar /> : null}
+      {!isImmersivePage ? <Header /> : null}
+      {!isImmersivePage ? <SocialFloatingBar /> : null}
 
-      <main id="main" className={isBriefPage ? "" : "pt-20"}>
+      <main id="main" className={isImmersivePage ? "" : "pt-20"}>
         <CookieBanner />
 
         <Routes>
@@ -42,6 +45,7 @@ function AppLayout() {
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/about-site/:id" element={<AboutSitePage />} />
           <Route path="/project-brief" element={<ProjectBriefPage />} />
+          <Route path="/graphics-lab" element={<GraphicsLabPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
 
           <Route
@@ -57,7 +61,7 @@ function AppLayout() {
         </Routes>
       </main>
 
-      {!isBriefPage ? <Footer /> : null}
+      {!isImmersivePage ? <Footer /> : null}
     </div>
   );
 }

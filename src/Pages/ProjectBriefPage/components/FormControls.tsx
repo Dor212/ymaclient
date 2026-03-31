@@ -13,12 +13,12 @@ export function SectionLabel({
   caption?: string;
 }) {
   return (
-    <div className="mb-5 text-right">
+    <div className="mb-5 text-center">
       <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.25em] text-[#8FE7FF]/85">
         <Icon className="w-4 h-4" />
         <span>{title}</span>
       </div>
-      {caption ? <p className="mt-3 max-w-3xl text-sm leading-7 text-white/72">{caption}</p> : null}
+      {caption ? <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-white/72">{caption}</p> : null}
     </div>
   );
 }

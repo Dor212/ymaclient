@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function handlePortfolioNavigation() {
   try {
@@ -11,8 +12,8 @@ function handlePortfolioNavigation() {
 
 export default function PortfolioFloatingLink() {
   return (
-    <a
-      href="/#portfolio"
+    <Link
+      to="/"
       aria-label="לעבודות מוכנות ולאתרים מוכנים של YMA"
       onClick={handlePortfolioNavigation}
       className="fixed bottom-4 left-4 z-[70] md:bottom-6 md:left-6"
@@ -27,7 +28,7 @@ export default function PortfolioFloatingLink() {
             src="/icons/planet3.png"
             alt=""
             aria-hidden="true"
-            className="h-full w-full object-cover select-none"
+            className="object-cover w-full h-full select-none"
             draggable={false}
           />
         </div>
@@ -45,9 +46,9 @@ export default function PortfolioFloatingLink() {
         </div>
 
         <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/80 transition group-hover:translate-x-[-2px]">
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="w-4 h-4" />
         </span>
       </motion.div>
-    </a>
+    </Link>
   );
 }

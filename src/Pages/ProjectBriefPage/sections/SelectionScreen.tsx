@@ -33,7 +33,7 @@ export default function SelectionScreen({ errors, onOpenPreview }: SelectionScre
 
         <SentenceLines
           text="לא צריך להבין בבניית אתרים. פשוט לבחור את האפשרות שהכי קרובה למה שיש לך בראש. לקרוא הסבר קצר. ואז להמשיך לשאלון שמותאם בדיוק לסוג הפרויקט שבחרת."
-          className="mx-auto mt-2 max-w-[42rem] text-[12px] leading-5 text-white/70 sm:mt-3 sm:text-[14px] sm:leading-6"
+          className="mx-auto mt-2 max-w-[42rem] text-center text-[12px] leading-5 text-white/70 sm:mt-3 sm:text-[14px] sm:leading-6"
         />
       </div>
 
