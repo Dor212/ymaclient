@@ -4,7 +4,7 @@ export const SITE = {
   defaultTitle: "Y.M.A – אתרים מותאמים אישית בקוד מלא",
   defaultDescription:
     "בניית אתרים חכמים ומהירים בקוד מלא, עם SEO מצוין, אבטחה וביצועים גבוהים – מותאם לעסק שלך.",
-  defaultImage: "/Logo.png",
+  defaultImage: "/LG2F.png",
   lang: "he",
   dir: "rtl",
   locale: "he_IL",
