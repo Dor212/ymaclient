@@ -50,6 +50,9 @@ async function waitForFonts() {
     if ("fonts" in document) {
         await document.fonts.ready;
     }
+
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    await new Promise((resolve) => setTimeout(resolve, 80));
 }
 
 function downloadBlob(blob: Blob, fileName: string) {
@@ -77,7 +80,19 @@ function AccentWord({
                     ? "from-[#dbfff4] via-[#72ffd2] to-[#52b6ff]"
                     : "from-[#c8fbff] via-[#54dfff] to-[#8c98ff]";
 
-    return <span className={`bg-gradient-to-r ${toneClass} bg-clip-text text-transparent [text-shadow:none]`}>{children}</span>;
+    return (
+        <span className="inline-block overflow-visible px-[0.08em] [margin-inline:-0.08em] pb-[0.06em]">
+            <span
+                className={`inline-block overflow-visible bg-gradient-to-r ${toneClass} bg-clip-text text-transparent [text-shadow:none]`}
+                style={{
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                }}
+            >
+                {children}
+            </span>
+        </span>
+    );
 }
 
 function GraphicsPoster({ format }: { format: PosterFormat }) {
@@ -132,14 +147,14 @@ function GraphicsPoster({ format }: { format: PosterFormat }) {
 
                 <div className="flex items-center justify-center flex-1 w-full text-center">
                     <div
-                        className="w-full"
+                        className="w-full overflow-visible"
                         style={{
                             textShadow: "0 12px 34px rgba(0,0,0,0.38)",
                             fontFamily: '"Secular One", "Rubik", "Heebo", sans-serif',
                             fontWeight: 900,
                         }}
                     >
-                        <div className={`${isStory ? "space-y-1 leading-[0.82]" : "space-y-0.5 leading-[0.82]"}`}>
+                        <div className={`${isStory ? "space-y-1 leading-[0.82]" : "space-y-0.5 leading-[0.82]"} overflow-visible`}>
                             <div className={`${isStory ? "text-[10.4rem]" : "text-[8.45rem]"} tracking-[-0.085em]`}>
                                 <AccentWord tone="mint">רוצים להבין</AccentWord>
                             </div>
@@ -152,7 +167,7 @@ function GraphicsPoster({ format }: { format: PosterFormat }) {
                                 <AccentWord tone="cyan">באמת צריך</AccentWord>
                             </div>
 
-                            <div className={`${isStory ? "text-[8.2rem]" : "text-[6.65rem]"} tracking-[-0.08em]`}>
+                            <div className={`${isStory ? "text-[8.2rem]" : "text-[6.65rem]"} tracking-[-0.048em] overflow-visible`}>
                                 <AccentWord tone="pink">באתר</AccentWord>
                                 <span className="text-white/42">,</span>
                             </div>

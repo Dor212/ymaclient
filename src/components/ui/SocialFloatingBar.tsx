@@ -2,7 +2,7 @@
 import { FaWhatsapp, FaInstagram, FaFacebookF } from "react-icons/fa";
 
 const SocialFloatingBar = () => {
-    const whatsappUrl = "https://wa.me/9742306608";
+    const whatsappUrl = "https://wa.me/972542306608";
     const instagramUrl = "https://www.instagram.com/ymawebsites1/";
     const facebookUrl = "https://www.facebook.com/profile.php?id=61578574384114&locale=he_IL";
 
